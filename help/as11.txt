@@ -1,0 +1,599 @@
+This document is supposed to describe as11, the PDP-11 cross-assembler.
+
+Command line: as11 [options] assembly-file
+
+Options:
+	-l listing-file
+		Writes a listing, including generated code, into the
+		named file.
+
+	-o output-file
+		Writes the generated code into the named file.
+
+No filename extensions are enforced; the convention I have been using
+is .s11 for assembly source, .l11 for listings, and .o11 for output
+files.  Either (or both, if you feel weird) of the options can take the
+name -, which means to write the corresponding thing to as11's standard
+output.  This is really useful only with the -l option; looking at
+output files is not very interesting.  They are not intended to be read
+by anything but the simulator.
+
+The assembly-file must be a real file.  (Actually, it must be something
+on which rewind(3) works.)
+
+The assembly language tries to stay moderately close to the DEC
+assembler syntax; in particular, it uses # and @ where the UNIX
+assemblers typically use $ and *.
+
+The assembler processes each line of the source file in turn.  An
+assembly source line takes one of the following forms.  Whitespace is
+ignored except where noted, though it does serve to separate tokens
+from one another.
+
+conditional
+[label] [comment]
+[label] pseudo-op
+[label] opcode [operand[,operand]] [comment]
+assignment [comment]
+
+where []s indicate that the thing enclosed is optional, and the names
+represent things as follows.  Keywords, which appear in upper case in
+the descriptions below, are literal values; other things are terms to
+be described further.  Alphabetic case is ignored for such keywords,
+and also for opcode and register names, but not for symbol names or in
+character constants or strings.
+
+comment
+
+	A ; together with everything following it, up to the end of the
+	line.
+
+conditional
+
+	One of
+		.IF	condition	expression
+		.IF	DF		symbol
+		.IF	NDF		symbol
+		.IFT
+		.IFF
+		.IFTF
+		.ENDC
+		.ENDIF
+	where "condition" is one of EQ, NE, LT, GT, LE, or
+	GE.  These provide conditional assembly.  When a .IF
+	directive is encountered, if the condition is true, assembly
+	continues as normal up to the matching .ENDIF; if false, all
+	lines in between are ignored, except for further conditionals.
+	This can be further modified by the .IFF and .IFT directives,
+	which assemble code if the original condition was false or
+	true, respectively, or .IFTF, which assembles code
+	unconditionally (but does not terminate the conditional).
+	Conditionals can be nested to an arbitrary depth and take no
+	notice of include file boundaries (though a .INCLUDE directive
+	is not executed if code is not being assembled at the time it
+	is seen).  .ENDC and .ENDIF are synonyms.
+
+	The condition of an if is considered true for the first form if
+	the expression bears the indicated relation to 0; for example,
+		.IF	GE	foo-bar
+		...
+		.ENDC
+	will assemble the contained code if foo-bar >= 0.
+
+	.IF DF and .IF NDF test whether a symbol is defined and
+	assemble code if it is or is not defined, respectively.
+
+	Note that conditionals look like pseudo-ops but, unlike
+	pseudo-ops, cannot carry labels.
+
+	Code inside a false conditional is not inspected, except to
+	determine whether it is a conditional, and thus can include
+	illegal opcode names, invalid expression syntax, or indeed
+	anything that cannot be parsed as a conditional.  This can be
+	dangerous, because a conditional with a syntax error will not
+	be taken as a conditional if it occurs inside (another) false
+	conditional.
+
+	When inside a false conditional, the normal octal number giving
+	the value of dot at the left hand side of the listing is
+	replaced with six dashes.
+
+symbol
+
+	Any sequence of characters drawn from the set !$%&.?^_~ plus
+	the digits and letters, but not beginning with a digit or a $.
+	Any character can be part of a symbol name if it is preceded
+	with a backslash; except for this, whitespace cannot be part of
+	a symbol name.  Some symbol names beginning with a . have
+	reserved meanings.  Currently, these are
+
+		.	The current address.  This is updated only
+			between lines; within any given line it is
+			constant.  Assigning to it performs the
+			function of the .org pseudo-op in some other
+			assemblers.
+
+		.base	The default base, used to interpret numbers
+			where no other base can be determined.  Can
+			range from 2 through 36.  See the description
+			of an expression for more details.
+
+assignment
+
+		symbol = expression [comment]
+	or
+		symbol == expression [comment]
+
+	Both forms cause the symbol to be given a value equal to the
+	value of the expression.  The difference between the two forms
+	is that the form with the double equal sign produces a warning
+	if you change the value of a symbol; it is intended for
+	manifest constants, such as device register addresses, whereas
+	the first form produces no message if you change the value of
+	the symbol with it; it can be used like an assignment in a
+	programming language.  (Note, though, that the assembler is not
+	intended as a general-purpose programming language!)
+
+	A symbol's value can have any type; they are not restricted to
+	16-bit integers.  Any expression's value can be store in a
+	symbol with an assignment and will reappear, type and value
+	unchanged, when that symbol is used in an expression.
+
+label
+
+	A symbol followed by a colon.  There may be whitespace between
+	the symbol and the colon.  Doing this causes the symbol to be
+	given a value equal to the value of . for the line on which it
+	was seen.
+
+pseudo-op
+
+	One of the following:
+
+		.ASCII	string
+		.ASCIZ	string
+		.EVEN
+		.ODD
+		.ALIGN	expression [comment]
+		.SPACE	expression [comment]
+		.BLKB	expression [comment]
+		.BLKW	expression [comment]
+		.BYTE	[expression[,expression[,expression...]]] [comment]
+		.WORD	[expression[,expression[,expression...]]] [comment]
+		.LONG	[expression[,expression[,expression...]]] [comment]
+		.QUAD	[expression[,expression[,expression...]]] [comment]
+		.FLOAT	[expression[,expression[,expression...]]] [comment]
+		.DOUBLE	[expression[,expression[,expression...]]] [comment]
+		.LIST	{ON|OFF|PUSH[{ON|OFF}]|POP}
+		.INCLUDE filename [comment]
+		.END	[expression]
+		.DB	[expression[,expression[,expression...]]] [comment]
+		.DW	[expression[,expression[,expression...]]] [comment]
+		.DL	[expression[,expression[,expression...]]] [comment]
+		.DQ	[expression[,expression[,expression...]]] [comment]
+		.DF	[expression[,expression[,expression...]]] [comment]
+		.DD	[expression[,expression[,expression...]]] [comment]
+
+	These have semantics as follows:
+
+	.ASCII
+	.ASCIZ
+		These assemble a string of ASCII characters.  See the
+		entry for "string" for a description of what they
+		accept.  The difference between .ASCII and .ASCIZ is
+		that .ASCIZ automatically appends a null byte, as if
+		the string ended with <0>.
+
+	.EVEN
+	.ODD
+		These test whether . is even or odd, respectively, and
+		skip forward by one if not.  (.EVEN is, thus,
+		equivalent to .ALIGN 2.)
+
+	.ALIGN
+		This advances . until it's an exact multiple of the
+		expression.  This is not needed often; .EVEN is all
+		that's usually required.
+
+	.SPACE
+		This advances . by as many bytes as the value of the
+		expression.  Thus, these two are equivalent:
+			.SPACE	expression
+			. = . + expression
+
+	.BLKB
+	.BLKW
+		These reserve space for the specified number of bytes
+		or words, respectively.  (.BLKB is thus equivalent to
+		.SPACE.)
+
+	.BYTE
+	.DB
+		These reserve bytes of memory and initialize them to
+		the listed expressions.  One byte is reserved for each
+		expression listed.  Both forms are completely
+		equivalent.
+
+	.WORD
+	.DW
+		These reserve words of memory and initialize them to
+		the listed expressions.  One word is reserved for each
+		expression listed.  Both forms are completely
+		equivalent.
+
+	.LONG
+	.DL
+		These reserve longwords of memory (32 bits each) and
+		initialize them to the listed expressions.  One
+		longword is reserved for each expression listed.  Both
+		forms are completely equivalent.
+
+	.QUAD
+	.DQ
+		These reserve quadwords of memory (64 bits each) and
+		initialize them to the listed expressions.  One
+		quadword is reserved for each expression listed.  Both
+		forms are completely equivalent.
+
+	.FLOAT
+	.DF
+		These reserve and initialize single-floats (32 bits
+		each) in memory.  One float is reserved for each listed
+		expression.  Both forms are completely equivalent.
+
+	.DOUBLE
+	.DD
+		These reserve and initialize double-floats (64 bits
+		each) in memory.  One double is reserved for each
+		listed expression.  Both forms are completely
+		equivalent.
+
+	.LIST
+		This controls the listing of lines.  If the argument is
+		ON or OFF, listing of lines is turned on or off,
+		respectively.  A stack of listing state is maintained;
+		the arguments PUSH and POP control this stack.  POP
+		pops it, setting the listing state to the state thus
+		uncovered; PUSH alone duplicates the current state and
+		pushes it on the stack, whereas PUSH ON and PUSH OFF
+		push the stack and set the new state as specified.
+
+	.INCLUDE
+		Includes a file.  When a .INCLUDE directive is read,
+		further lines are taken from the named file until
+		end-of-file or a .END directive is reached, at which
+		point assembly continues with the line after the
+		.INCLUDE directive.  Includes can be nested arbitrarily
+		deeply (or at least until the assembler runs out of
+		open files; typically this limit will be at least
+		fifteen or so, and often as much as 50 or 60).
+
+	.END
+		No further lines are read from the current input file.
+		If it is being read because it was named in a .INCLUDE
+		directive, processing resumes with the line after the
+		.INCLUDE; if it is being processed because it was named
+		on the command line, assembly terminates as if
+		end-of-file had been reached.  Nothing after a .END
+		directive is examined by the assembler, except in one
+		circumstance: when the .END is inside a false
+		conditional, in which case it is ignored like all other
+		pseudo-ops.
+
+string
+
+	A sequence of quoted-strings and ASCII-codes.  A quoted-string
+	is any string of characters surrounded by matching delimiters,
+	provided the delimiter is not a less-than sign.  Such a string
+	produces one byte in memory for each character between
+	delimiters.  An ASCII-code is an expression inside <>, and
+	assembles as one byte, whose value is that of the expression.
+	Whitespace is significant inside quoted-strings, but not
+	elsewhere (except possibly for character constants in the
+	expression - see the description of expressions).
+
+	Note that it is not possible to put a trailing comment after a
+	string, because the leading semicolon would be taken as the
+	leading delimiter of a quoted-string.
+
+filename
+
+	Any string of characters between matching delimiters.  The
+	delimiter is taken to be the first non-whitespace character
+	after the directive; the filename is everything from there up
+	to the matching delimiter.  Unlike a string (above), a comment
+	can appear after a filename.
+
+opcode
+
+	One of the recognized opcode names.  As of this writing, they
+	are:
+
+	ABSD	BICB	CLNV	CSM	LDF	NOP	SETF	STST
+	ABSF	BIS	CLNVC	DEC	LDFPS	RESET	SETI	SUB
+	ADC	BISB	CLNZ	DECB	MARK	ROL	SETL	SUBD
+	ADCB	BIT	CLNZC	DIV	MFPD	ROLB	SEV	SUBF
+	ADD	BITB	CLNZV	DIVD	MFPI	ROR	SEVC	SWAB
+	ADDD	BLE	CLR	DIVF	MFPS	RORB	SEZ	SXT
+	ADDF	BLO	CLRB	EMT	MFPT	RTI	SEZC	TRAP
+	ASH	BLOS	CLRD	HALT	MODD	RTS	SEZV	TST
+	ASHC	BLT	CLRF	INC	MODF	RTT	SEZVC	TSTB
+	ASL	BMI	CLV	INCB	MOV	SBC	SOB	TSTD
+	ASLB	BNE	CLVC	IOT	MOVB	SBCB	SPL	TSTF
+	ASR	BPL	CLZ	JMP	MTPD	SCC	STCDF	TSTSET
+	ASRB	BPT	CLZC	JSR	MTPI	SEC	STCDI	WAIT
+	BCC	BR	CLZV	LDCDF	MTPS	SEN	STCDL	WRTLCK
+	BCS	BVC	CLZVC	LDCFD	MUL	SENC	STCFD	XOR
+	BEQ	BVS	CMP	LDCID	MULD	SENV	STCFI
+	BGE	CCC	CMPB	LDCIF	MULF	SENVC	STCFL
+	BGT	CFCC	CMPD	LDCLD	NEG	SENZ	STD
+	BHI	CLC	CMPF	LDCLF	NEGB	SENZC	STEXP
+	BHIS	CLN	COM	LDD	NEGD	SENZV	STF
+	BIC	CLNC	COMB	LDEXP	NEGF	SETD	STFPS
+
+	The convention some assemblers support, allowing what looks
+	like bitwise or applied to opcodes, to combine multiple
+	condition-code manipulation instructions into one, does not
+	work.  Instead, each of the 15 possible combinations has its
+	own opcode, formed by listing the affected bits in the order
+	NZVC, or SCC/CCC for the instructions affecting all four bits.
+
+operand
+
+	Precisely what is legal in the "operand" field depends on the
+	instruction.  Some take no operands at all; some take only one,
+	and some take two.  Each instruction must be given the correct
+	number of operands, and what sorts of operands an instruction
+	can take depends on the instruction.  Each instructions falls
+	into one of 19 patterns, though.  A description of the various
+	types of operands referred to will follow.
+
+	1)	No operands.  Instructions falling into this class are:
+
+		BPT	CLNVC	CLZC	RESET	SENV	SETI	SEZVC
+		CCC	CLNZ	CLZV	RTI	SENVC	SETL	WAIT
+		CFCC	CLNZC	CLZVC	RTT	SENZ	SEV
+		CLC	CLNZV	HALT	SCC	SENZC	SEVC
+		CLN	CLV	IOT	SEC	SENZV	SEZ
+		CLNC	CLVC	MFPT	SEN	SETD	SEZC
+		CLNV	CLZ	NOP	SENC	SETF	SEZV
+
+	2)	One general-addressing operand.  Instructions falling
+		into this pattern are:
+
+		ADC	CLR	DECB	MFPI	NEGB	SBCB	TSTB
+		ADCB	CLRB	INC	MFPS	ROL	STFPS	TSTSET
+		ASL	COM	INCB	MTPD	ROLB	STST	WRTLCK
+		ASLB	COMB	JMP	MTPI	ROR	SWAB
+		ASR	CSM	LDFPS	MTPS	RORB	SXT
+		ASRB	DEC	MFPD	NEG	SBC	TST
+
+		Note, though, that the operand of JMP is not allowed to
+		be a register.
+
+	3)	One operand, which must be a general-purpose register.
+		The only instruction in this class is RTS.
+
+	4)	One operand, which must be a constant from 0 through 7.
+		The only instruction in this class is SPL.
+
+	5)	One operand, which is a target to branch to; this
+		target must be within approximately 128 instructions of
+		the branch.  Instructions falling into this pattern
+		are:
+
+		BCC	BGE	BHIS	BLOS	BNE	BVC
+		BCS	BGT	BLE	BLT	BPL	BVS
+		BEQ	BHI	BLO	BMI	BR
+
+	6)	Two operands, the first being a general-purpose
+		register and the second an general-addressing operand.
+		Instructions falling into this pattern are JSR and XOR,
+		but note that the second operand for JSR is not allowed
+		to be a register.
+
+	7)	Two operands, the first being a general-addressing
+		operand and the second a general-purpose register.
+		Instructions falling into this pattern are ASH, ASHC,
+		DIV, and MUL.
+
+	8)	Two operands, both being general-addressing operands.
+		Instructions falling into this pattern are:
+
+		ADD	BICB	BISB	BITB	CMPB	MOVB
+		BIC	BIS	BIT	CMP	MOV	SUB
+
+	9)	Two operands, the first being a general-purpose
+		register and the second being a target to branch to;
+		the target must be before the instruction and cannot be
+		farther than approximately 64 instructions back.  The
+		only instruction in this class is SOB.
+
+	10)	One operand, which must be a constant from 0 through
+		377 (255.).  The instructions in this class are EMT and
+		TRAP.
+
+	11)	One operand, which must be a constant from 0 through 77
+		(63.).  The only instructions in this class is MARK.
+
+	12)	One operand, which must be a single-precision
+		floating-point general-addressing operand.  The
+		instructions in this class are ABSF, CLRF, NEGF, and
+		TSTF.
+
+	13)	Two operands, the first being a floating-point register
+		from F0 to F3 and the second being a single-precision
+		floating-point general-addressing operand.  The
+		instructions in this class are STCDF and STF.
+
+	14)	Two operands, the first being a single-precision
+		floating-point general-addressing operand and the
+		second being a floating-point register from F0 to F3.
+		The instructions in this class are:
+
+		ADDF	DIVF	LDF	MULF
+		CMPF	LDCFD	MODF	SUBF
+
+	15)	Two operands, the first being a floating-point register
+		from F0 to F3 and the second being a
+		(non-floating-point) general-addressing operand.  The
+		instructions in this class are STCDI, STCDL, STCFI,
+		STCFL, and STEXP.
+
+	16)	Two operands, the first being a (non-floating-point)
+		general-addressing operand and the second being a
+		floating-point register from F0 to F3.  The
+		instructions in this class are LDCID, LDCIF, LDCLD,
+		LDCLF, and LDEXP.
+
+	17)	One operand, which must be a double-precision
+		floating-point general-addressing operand.  The
+		instructions in this class are ABSD, CLRD, NEGD, and
+		TSTD.
+
+	18)	Two operands, the first being a floating-point register
+		from F0 to F3 and the second being a double-precision
+		floating-point general-addressing operand.  The
+		instructions in this class are STCFD and STD.
+
+	19)	Two operands, the first being a double-precision
+		floating-point general-addressing operand and the
+		second being a floating-point register from F0 to F3.
+		The instructions in this class are:
+
+		ADDD	DIVD	LDD	MULD
+		CMPD	LDCDF	MODD	SUBD
+
+	where the following terms have the following meanings:
+
+	general-addressing operand
+		One of the following:
+			gpr
+			(gpr)
+			(gpr)+
+			@(gpr)+
+			-(gpr)
+			@-(gpr)
+			expression(gpr)
+			@expression(gpr)
+			#expression
+			@#expression
+			expression
+			@expression
+		where gpr means general-purpose register.
+
+	general-purpose register
+		One of R0, R1, R2, R3, R4, R5, R6, R7, SP, or PC.  No
+		whitespace is allowed in a register name.
+
+	constant
+		An expression whose value is within the indicated
+		range.
+
+	target to branch to
+		An expression designating an address to branch to.
+
+	single-precision floating-point general-addressing operand
+	double-precision floating-point general-addressing operand
+		One of the following
+			fpr
+			(gpr)
+			(gpr)+
+			@(gpr)+
+			-(gpr)
+			@-(gpr)
+			expression(gpr)
+			@expression(gpr)
+			#expression
+			@#expression
+			expression
+			@expression
+		where gpr means general-purpose register and fpr means
+		floating-point register.
+
+	floating-point register
+		One of F0, F1, F2, F3, F4, or F5.  In some cases, F4
+		and F5 are not allowed.
+
+expression
+
+	An expression formed from numeric constants, symbols (which
+	produce their values when used in expressions), in the usual
+	way with the following set of operators:
+
+		+	(binary) addition
+		-	(binary) subtraction
+		*	(binary) multiplication
+		/	(binary) division
+		+	(unary) no-op
+		-	(unary) negation
+		~	(unary) bitwise complement
+		%FASI	(unary) convert floating-point to integer by
+			reinterpreting the bits, not by converting the
+			value
+		%IASF	(unary) convert integer to floating-point by
+			reinterpreting the bits, not by converting the
+			value
+		%FIX	(unary) convert floating-point to integer by
+			converting the value and (currently) rounding
+		%ROUND	(unary) convert floating-point to integer by
+			converting the value and rounding
+		%TRUNC	(unary) convert floating-point to integer by
+			converting the value and truncating
+
+	where parentheses ( ) or < > can be used to override the
+	precedence rules of the binary operators.  All unary operators
+	come before their operand, and all of them bind tighter than
+	any binary operator.
+
+	Numeric constants are of two types.  Floating-point constants
+	consist of a mantissa part, containing one or more digits and
+	possible a decimal point, optionally followed by an exponent
+	consisting of one of the letters e, E, d, or D, an optional
+	sign, and a decimal exponent, except that if there is no
+	decimal point, or if there are no digits after the decimal
+	point, the exponent portion must be present.  Integer constants
+	are basically strings of digits.  The set of legal digits
+	changes, depending on the base; there are four ways to specify
+	the base:
+
+		- Explicitly, by writing the base in decimal and
+		  enclosing it in { } and placing it before the rest of
+		  the number.  For example, {8}100 is the number
+		  sixty-four.
+
+		- The traditional way of specifying decimal, with a
+		  trailing period.  Thus, 100. is one hundred.
+
+		- With a prefix.  If the number begins with 0o or 0O,
+		  it is taken in base 8; if 0t or 0T, base 10; and if
+		  0x or 0X, base 16.  (But see the note on the next
+		  paragraph.)
+
+		- By default.  There is at all times a notion of the
+		  default base; this base is used for numbers that do
+		  not otherwise have a base specified.  It is the value
+		  of the reserved symbol .base and can be changed by
+		  assigning to .base with an assignment.  .base can
+		  take on any value from 2 through 36; if the value is
+		  greater than 16, the prefix notation for specifying
+		  bases is disabled.  In bases above 10, the digits are
+		  alphabetic letters; case is ignored.  The default
+		  default base is 8.
+
+The listing file optionally generated consists of each line of assembly
+source code, prefixed with the value of . in six-digit octal and a
+colon.  If the line came from a .INCLUDE file, a number is prefixed to
+indicate the depth of nesting.  If anything is assembled into memory as
+a result of the line, the assembled data follow.  (If the .LIST
+directive is used to disable listing, an ellipsis is printed to
+indicate the omitted lines.)
+
+If you think the assembler does not conform to the above, I'd like to
+hear about why, because if it doesn't it's a bug (though it may be a
+bug in the description rather than the assembler :-).
+
+					der Mouse
+
+			old: mcgill-vision!mouse
+			new: mouse@larry.mcrcim.mcgill.edu

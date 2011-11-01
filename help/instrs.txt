@@ -1,0 +1,822 @@
+PDP-11 integer
+FP-11 floating
+22-bit memory management, K=00/S=01/U=11 modes
+ODT
+8K write-through cache
+Programmer-visible registers:
+	General-purpose:	R0-R5, R0'-R5', KSP, SSP, USP, PC
+	System control:		PSW, LTC, PIRQ, MAINT, CPU ERROR
+	Memory system:		CACHE CONTROL, MEM SYS ERR, HIT/MISS
+	Floating point:		FPS, FEC, FEA, 6 accumulators (64 bits each)
+	Memory management:	MMR0, MMR1, MMR2, MMR3, K/S/U page tables
+				(8 each I and D space, PAR/PDR for each)
+bit 11 of PSW says whether R0-R5 or R0'-R5' are in use
+PSW bits 14-15 select KSP/SSP/USP for R6, except for M[TF]P[ID], for which bits 12-13 select:
+	PSW 15,14 or 13,12	R6 is
+		00		KSP
+		01		SSP
+		10		illegal - USP used
+		11		USP
+
+PSW (address 17777776)
+	  15   14   13   12   11   10    9    8    7    6    5    4    3    2    1    0
+	+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+	| Current |Previous |Reg |    |    |Susp|   Priority   |    |    |    |    |    |
+	|   mode  |    mode | set|  0 |  0 |info|    level     |  T |  N |  Z |  V |  C |
+	+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+Current mode:	00=kernel 01=supervisor 10=illegal 11=user
+Previous mode:	as current mode
+Reg set:	Selects register set (0=R0-R5, 1=R0'-R5')
+Susp info:	Reserved (?)
+Priority level:	Current priority level, coded in 3-bit binary
+T:		When set, trap through 14 occurs at the end of the current instruction
+		Cannot be set by writing to PSW; must use RTI/RTT
+N/Z/V/C:	Condition codes
+
+CPU ERROR (address 17777766; entire register is readonly)
+	  15   14   13   12   11   10    9    8    7    6    5    4    3    2    1    0
+	+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+	|    |    |    |    |    |    |    |    |Ill |Addr|NXM |I/O |Yel |Red |    |    |
+	|  0 |  0 |  0 |  0 |  0 |  0 |  0 |  0 |Halt|Err | Err|Timo| Stk| Stk|  0 |  0 |
+	+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+Ill Halt:	HALT instruction attempted in user or supervisor mode
+Addr Err:	Word access to odd address, or instruction fetch from internal register
+NXM Err:	Main memory reference timed out
+I/O Timo:	I/O page reference timed out
+Yel Stk:	Yellow stack overflow trap (kernel mode stack ref < 0400)
+Red Stk:	Red stack trap (kernel stack push abort during interrupt/abort/trap)
+
+PIRQ (address 17777772) [Program Interrupt ReQuest]
+	High byte is bitmask of interrupts requested (all read/write)
+		(priority i's bit is 1<<(i+8), i in 1..7)
+	Low byte is 0x22 times highest priority requested (all readonly)
+	Cleared by power-up, console start, or RESET.
+
+LTC (address 17777546) [Line Time Clock]
+	Is either 0x0000 or 0x0040.  When bit is set, BEVNTL bus signal generates highest possible
+	level 6 interrupt through 100.
+	Cleared by power-up, console start, or RESET.
+
+MAINT (address 17777750; entire register is readonly)
+	  15   14   13   12   11   10    9    8    7    6    5    4    3    2    1    0
+	+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+	|                   |    |    |    |FPA |                   |HALT| Powerup | DC |
+	|   Boot address    |  0 |  0 |  0 |Avl.|     Module ID     |Optn| option  | OK |
+	+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+Boot address:	Contains boot address from jumpers:
+		15 = W1, 14 = W2, 13 = W4, 12 = W6.  1 indicates inserted, 0 indicates removed.
+FPA Avl.:	1 if FPA is installed, 0 otherwise.
+Module ID:	0001 indicating KDJ11-A
+HALT Optn:	1: W5 removed, HALT will do SP<-4, then trap through 4 (kernel data space), also sets Ill Halt in CPU ERROR
+		0: W5 installed, HALT will enter ODT
+Powerup option:	Power-up option from jumpers:
+		2 = W3, 1 = W7 (0 = installed, 1 = removed):
+		2 1	Option
+		0 0	PC at 24, PS at 26
+		0 1	ODT, PS = 0
+		1 0	PC = 173000, PS = 340
+		1 1	User bootstrap (PC = boot address << 12, PS = 340)
+DC OK:		Set when BPOK H is asserted, indicating DC power is OK.
+
+Asynch interrupts:
+
+Interrupt		Int/Ext	Vector	Priority	Notes
+Red stack trap		Int	4	NM		CPU ERROR bit 2
+Address error		Int	4	NM		CPU ERROR bit 6
+Memory mgt violation	Int	250	NM		MMR0 15..13
+Timeout/NXM		Int	4	NM		CPU ERROR bits 5..4
+Parity error		Ext	114	NM
+Trace trap		Int	14	NM		PSW bit 4
+Yellow stack trap	Int	4	NM		CPU ERROR bit 3
+Power fail		Ext	24	NM
+FP exception		Ext	244	NM
+PIRQ bit 15		Int	240	7
+IRQ 7			Ext	User	7
+PIRQ bit 14		Int	240	6		Book says priority 7??
+BEVNT			Ext	100	6		LTC bit 6
+IRQ 6			Ext	User	6
+PIRQ bit 13		Int	240	5
+IRQ 5			Ext	User	5
+PIRQ bit 12		Int	240	4
+IRQ 4			Ext	User	4
+PIRQ bit 11		Int	240	3
+PIRQ bit 10		Int	240	2
+PIRQ bit 9		Int	240	1
+Halt line		Ext	N/A	N/A		Enters console mode
+
+Synch interrupts:
+
+Interrupt			Vector
+FP instruction exception	244
+TRAP instruction		34
+EMT instruction			30
+IOT instruction			20
+BPT instruction			14
+CSM instruction			10
+HALT instruction		4 (unless kernel mode and W5 installed: ->ODT)
+WAIT instruction		N/A
+
+Memory management:
+
+16 user mode memory pages
+16 supervisor mode memory pages
+16 kernel mode memory pages
+8 pages in each mode for instructions
+8 pages in each mode for data
+Page lengths from 64 to 8K bytes
+
+Memory management off:	virtual 000000-157777 is physical 00000000-00157777
+			virtual 160000-177777 is physical 17760000-17777777
+
+Not sure whether vectors are read from physical memory or kernel D space; book seems to contradict itself.
+
+Stack used for push of PC and PSW is stack in 15..14 of new PSW.
+PSW mode bits also determine new mapping register set.
+I space is used for instructions, index words, absolute addresses, and immediate data.
+D space is used for everything else.
+MMR3 can cause D space to use the I space tables instead.
+V->P mapping: PA = (VA & 017777) + (PAR[space-and-access-mode][VA>>13]<<6)
+
+MMR0			17777572
+MMR1			17777574
+MMR2			17777576
+MMR3			17777516
+User I PDR 0		17777600
+...
+User I PDR 7		17777616
+User D PDR 0		17777620
+...
+User D PDR 7		17777636
+User I PAR 0		17777640
+...
+User I PAR 7		17777656
+User D PAR 0		17777660
+...
+User D PAR 7		17777676
+Supervisor I PDR 0	17772200
+...
+Supervisor I PDR 7	17772216
+Supervisor D PDR 0	17772220
+...
+Supervisor D PDR 7	17772236
+Supervisor I PAR 0	17772240
+...
+Supervisor I PAR 7	17772256
+Supervisor D PAR 0	17772260
+...
+Supervisor D PAR 7	17772276
+Kernel I PDR 0		17772300
+...
+Kernel I PDR 7		17772316
+Kernel D PDR 0		17772320
+...
+Kernel D PDR 7		17772336
+Kernel I PAR 0		17772340
+...
+Kernel I PAR 7		17772356
+Kernel D PAR 0		17772360
+...
+Kernel D PAR 7		17772376
+
+PDR:
+	  15   14   13   12   11   10    9    8    7    6    5    4    3    2    1    0
+	+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+	|    |                                  |    |    |    |    |    |         |    |
+	| NC |           Page Length            |  0 |  W |  0 |  0 | ED | Access  |  0 |
+	+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+NC:		RW	No Cache - always access memory; cache hits invalidate cache
+Page Length:	RW	Length violation if
+				ED clear:	(VA>>6)&0177 is greater than length
+				ED set:		(VA>>6)&0177 is less than length
+W:		RO	Cleared by write to PDR or corresponding PAR; set by hardware on write access
+ED:		RW	clear: expand upwards; set: expand downwards (affects only length check, as far as I can see)
+Access:		RW	Access control:
+				00	Nonresident - abort all accesses
+				01	Read only - abort write accesses
+				10	Not used - abort all accesses
+				11	Read/write - never abort
+
+MMR0 (address 17777572):
+	  15   14   13   12   11   10    9    8    7    6    5    4    3    2    1    0
+	+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+	|Non |Len | RO |    |    |    |    |    |    | Access  |Adrs|              | MM |
+	| res| err| err|  0 |  0 |  0 |  0 |  0 |  0 |   mode  | spc| Page number  | Enb|
+	+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+Non res:	RW	Set by use of page with access of 00 or 10, or attempt to use relocation with PSW 15..14 = 10
+Len err:	RW	Set by length violation (see PDR 14..8)
+RO err:		RW	Set by attempt to write to page with access of 01
+Access mode:	RO	Access mode of access attempt that caused abort
+Adrs spc:	RO	Indicates I/D space of access causing abort (I=0, D=1)
+Page number:	RO	Page number of page causing abort (ie, VA>>13)
+MM Enb:		RW	Memory management enable
+
+Setting any of MMR0 15..13 with an explicit write does not cause an abort.
+Whenever MMR0 15..13 are not all zero (regardless of how), MMR0 06..01, MMR1, and MMR2 are frozen.
+
+MMR1 (address 17777574):
+	  15   14   13   12   11   10    9    8    7    6    5    4    3    2    1    0
+	+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+	|                        |              |                        |              |
+	|     Amount changed     |  Register #  |     Amount changed     |  Register #  |
+	+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+Records autoincrement or autodecrement during instruction processing, PC included.
+Low byte is used for source operands; destination operands may be in either byte, depending on mode and instruction.
+Register is cleared at the beginning of each instruction fetch.
+
+MMR2 (address 17777576):
+MMR2 is loaded with PC at the beginning of each instruction fetch.
+
+MMR3 (address 17777516):
+	  15   14   13   12   11   10    9    8    7    6    5    4    3    2    1    0
+	+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+	|    |    |    |    |    |    |    |    |    |    |Unin| 22 |CSM |     Mode     |
+	|  0 |  0 |  0 |  0 |  0 |  0 |  0 |  0 |  0 |  0 |terp| bit| enb|  K    S    U |
+	+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+Uninterp:	Can be set or cleared, but is not used by hardware.
+22 bit:		Enables 22-bit mapping; default is 18-bit mapping.
+CSM enb:	Enables recognition of the CSM instruction.
+Mode K:		Enables mapping for kernel mode.
+Mode S:		Enables mapping for supervisor mode.
+Mode U:		Enables mapping for user mode.
+
+Upon memory parity error, abort through 114.
+Upon cache parity error, check CACHE CONTROL 7 and 0:
+7 0	Action
+0 0	Update cache, interrupt through 114
+0 1	Update cache silently
+1 X	Update cache, abort through 114 (should be used only by diagnostics)
+
+CACHE CONTROL (address 17777746):
+	  15   14   13   12   11   10    9    8    7    6    5    4    3    2    1    0
+	+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+	|    |    |    |    |    |Tag |    |    | PE |Data|         |  Force  |Diag|CPI |
+	|  0 |  0 |  0 |  0 |  0 | WWP|Byp |Flsh| enb| WWP|Uninterp |  miss   |mode| dis|
+	+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+Tag WWP:	Causes all cache updates to write the wrong tag parity.
+Byp:		All accesses go to real memory; read hits invalidate cache.
+Flsh:		Write-only (reads as 0); when written as 1, flushes cache (clears all valid bits).
+PE enb:		Enables parity error abort (see "Upon cache parity error").
+Data WWP:	Causes all cache updates to write the wrong data parity.
+Uninterp:	Can be set or cleared, but are not used by hardware.
+Force miss:	When either is set, cache is completely disabled.
+Diag mode:	Causes all non-bypass non-forced-miss word writes to allocate cache,
+		 irrespective of NXM errors.  In addition, NXM writes will not trap.
+CPI dis:	Disable cache parity interrupt (see "Upon cache parity error").
+
+HIT/MISS (address 17777752):
+Shift register containing 1 for hit and 0 for miss, updated on each memory reference.  Bit 0 is most recent.
+
+MEM SYS ERR (address 17777744):
+(This register is read-only; it is cleared by any write reference.)
+	  15   14   13   12   11   10    9    8    7    6    5    4    3    2    1    0
+	+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+	| PE |    |    |    |    |    |    |    | PE | PE |Tag |    |    |    |    |    |
+	|abrt|  0 |  0 |  0 |  0 |  0 |  0 |  0 |high| low| PE |  0 |  0 |  0 |  0 |  0 |
+	+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+PE abrt:	Set when cacpe or memory parity error aborts an instruction.
+PE high:	Set when parity error was caused by high data byte.
+PE low:		Set when parity error was caused by low data byte.
+Tag PE:		Set when parity error was caused by tag.
+
+Bits 7..5 are maintained when CACHE CONTROL 7 is set; when not, all three are set on any cache parity error.
+
+Floating point is VAX format.  Given 4 or 8 bytes in memory:
+
+8         1     7
+EMMMMMMM SEEEEEEE MMMMMMMM MMMMMMMM [ MMMMMMMM MMMMMMMM MMMMMMMM MMMMMMMM ]
+ 1     7          16    23 8     15   32    39 24    31 48    55 40    47
+(MSB has lowest number, for both E and M.  Yes, the mantissa byte-sex is twisted.)
+
+Mantissa includes a hidden bit.  Exponent is excess-128.  For example: 1.5 is c0 40 00 00 [ 00 00 00 00 ]
+
+FPS:
+	  15   14   13   12   11   10    9    8    7    6    5    4    3    2    1    0
+	+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+	|    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |    |
+	|FER |FID |  0 |  0 |FIUV|FIU |FIV |FIC | FD | FL | FT |  0 | FN | FZ | FV | FC |
+	+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+FER:	Floating ERror, set upon any of
+		- division by zero
+		- illegal opcode
+		- any of the other errors, when the corresponding interrupt is enabled
+FID:	Floating Interrupt Disable.  Normally clear; when set, all floating interrupts are disabled.
+	Intended as a maintenance feature.  Assumed clear in all other discussions.
+FIUV:	Floating Interrupt on Undefined Variable.  When set, reading a -0 from memory as operand
+	of ADD, SUB, MUL, DIV, CMP, MOD, NEG, ABS, TST, or any LOAD, causes interrupt, which occurs before execution.
+	When clear, -0 can be loaded and used.  Interrupt occurs on loading of -0, not on presence of -0 in registers.
+	The FPP will not store -0 without an interrupt.
+FIU:	Floating Interrupt on Underflow.  When set, floating underflow causes interrupt.  Fractional part will be
+	correct; exponent will be 0400 too large, except for 0, which is correct.  (An exception is discussed
+	under the LDEXP instruction.)
+	When reset, underflow stores exact 0 and no interrupt occurs.
+FIV:	Floating Interrupt on oVerflow.  When set, floating overflow causes interrupt.  Fractional part will be
+	correct; exponent will be 0400 too small.  Exceptions can occur for MOD and LDEXP instructions.
+	When reset, overflow stores exact 0 and no interrupt occurs.
+FIC:	Floating Interrupt on integer Conversion.  When set, a failure when trying to convert to an integer
+	will cause an interrupt.  Regardless of whether the interrupt occurs, the destination is set to 0 and
+	all other registers are untouched.
+FD:	Floating Double-precision.  When set, calculations are done in double; when clear, single.
+FL:	Floating Long integer.  When set, conversions between integers and floats assume 32-bit integers; when clear, 16.
+FT:	Floating Truncate.  When set, floating operations, truncate; when clear, they round.
+FN/FZ/FV/FC:
+	Condition codes.  FC can be set only by float-to-int or double-to-int conversion.
+
+FEC, FEA:
+One vector is used for all floating exceptions (244).  The six possible errors are coded in the FEC:
+	 2	Invalid opcode
+	 4	Divide-by-zero
+	 6	F-to-int or D-to-int conversion error
+	 8	Overflow
+	10	Underflow
+	12	Undefined variable
+The address of the instruction producing the exception is in the FEA.
+
+FEC and FEA are updated when any of these happen:
+	- Divide by zero
+	- Invalid opcode
+	- Any of the other four exceptions when the corresponding interrupt is enabled
+When the corresponding interrupt is disabled, the four exceptions do not update FEC and FEA.
+The FID bit does not inhibit the updating of FEC and FEA.
+
+Floating addressing modes:
+Same as main processor, except for mode 0, in which case the register is a floating accumulator instead of R0-R7.
+Autoincrement and autodecrement use 4 and 8 as the inc/dec amount.
+Attempts to use accumulator 6 or 7 will result in an illegal opcode trap.
+"In mode 0, users can [use] all six FPP accumulators [...].  In all other modes which involve transfer of data
+to or from memory or the general registers, users are restricted to the first four FPP accumulators (AC0-AC3).";
+this is probably because only two bits are reserved to hold the accumulator number.
+
+A biased exponent of 0 indicates a value of 0 (unless FIUV is enabled and the operand is -0, which traps).
+For all arithmetic except as the divisor of DIV, a 0 value means the result is exact.
+
+Two guard bits guarantee correct chop/round behavior for ADD/SUB/MUL/DIV.
+
+Rounding simply adds 1/2 LSB and then chops; there is no even/odd nonsense or such.
+
+Powerup sequence:
+
+	Turn off LED 1
+	Assert BINIT L
+	Wait 10 uS
+	Negate BINIT L
+	Clear MMR0
+	Clear MMR3
+	Wait 90 uS
+	Clear PIRQ
+	Clear FPS
+	do {
+		Read jumpers
+		Clear CPU ERROR
+	} while BPOK H is negated
+	Set CCR<8> to flush cache, and clear all other CCR bits
+	Clear MSER
+	Clear PS
+	Set CPU ERROR to 0177766
+	Read CPU ERROR
+	Clear CPU ERROR
+	if (value read equals value written) turn off LED 3
+	Read memory location 0
+	if (no NXM abort) {
+		Read memory location 0177700
+		if (NXM abort) {
+			Turn off LED 2
+		}
+	}
+	Read memory location 177560
+	if (no NXM abort) turn off LED 4
+	switch (powerup option) {
+		case 0:		pc@24, ps@26, begin execution
+		case 1:		ps=0, enter ODT
+		case 2:		pc=173000, ps=340, begin execution
+		case 3:		pc=(user boot << 12), ps=340, begin execution
+	}
+
+ODT G command:
+	Turn off LED 4
+	Assert BINIT L
+	Wait 10 uS
+	Negate BINIT L
+	Clear MMR0
+	Clear MMR3
+	Wait 90 uS
+	Clear PIRQ
+	Clear FPS
+	do {
+		Read jumpers
+		Clear CPU ERROR
+	} while BPOK H is negated
+	Set CCR<8>
+	Clear MSER
+	Clear PS
+	Begin execution
+
+Bus timeout while getting interrupt vector: interrupt is ignored.
+
+ODT entry:
+	DATI from RBUF (017777562) and ignore the character.
+	Print <CR> <LF>
+	Print R7 in %06o
+	Print <CR> <LF>
+	Print @
+	Enter wait loop
+
+ODT input sequence:
+	Busy-wait using DATI for RCSR (017777560) bit <7> to become 1
+	DATI from RBUF (017777562) and use low byte
+
+ODT output sequence:
+	Busy-wait using DATI for XCSR (017777564) bit <7> to become 1
+	DATO to XBUF (017777566) with character in low byte; high byte is undefined
+
+If XCSR bit <6> (interrupt enable) is set, program will get interrupt when P command is used.
+If G is used, BINIT L is supposed to clear all interrupt conditions.
+
+ODT has 10 internal states.  Each echoes unknown characters as ? and ignores them.
+ODT echoes parity bits faithfully but ignores them when processing.  Generated characters have 0 parity.
+All commands are echoed except for <LF>.
+R6 is the stack pointer selected by the PS.
+The PS responds to bus address 17777776; R0-R7 are not accessible by bus addresses.
+MMU registers are accessible by their bus addresses.
+Bus timeout generates "?\r\n@".
+
+ODT commands:
+	/	Open a bus address or processor register.
+		@R3/123456	open R3
+		@RS/123456	open PS
+		@1000/123456	open location 01000
+		With no specifier,
+		@/123456	re-opens just-modified location
+				(if none, ie if just entered ODT, ? is given.)
+
+	<CR>	Close open location.  If new data precedes the <CR>, thing is changed.
+		Reponse: <CR> <LF> @
+
+	<LF>	Close open location, open next location.  (If PS is open, this is like <CR>.)
+		Doing this when R7 is open gets to R0.
+		Address rollover is modulo 32K; to cross a 32K boundary, the address must be re-entered.
+		Is echoed unusually; response is <CR> <LF> @, then sequence to open next location.
+
+\0, \2, \12 are echoed as "?\r\n@".
+
+	$ is alternative to R for register designation with / command.  If more than one character follows
+	R (or $), last one is used, unless last three are 077 or 477, in which case PS is used.
+
+	The T-bit of the PS cannot be changed by ODT (misfeature?).
+
+	G	Go.  Echoed, then \0\0 is printed to flush the G, then above sequence is executed.
+
+	P	Proceed.  No programmer-visible state is altered.  After the P is echoed, the machine
+		is in instruction-fetch microstate.
+
+	^S	Binary dump.  After the echo, two 8-bit bytes are expected, high byte first; they are not
+		echoed.  These form a starting address in the first 64K of core.  ODT responds by dumping
+		8 bytes from that address in raw binary, then <CR> <LF> @.
+
+	H	Reserved to DEC in the future.  Treated as an invalid character.
+
+Bus use: there is DATO and DATOB and DATI, but no DATIB for some reason.
+Both DATIO and DATIOB do, however, exist.
+
+Addressing modes:
+
+	sss sss (or) ddd ddd  =  mmm rrr
+
+	mmm = mode; rrr = register
+
+	000	Rn
+	001	(Rn)
+	010	(Rn)+	#n
+	011	@(Rn)+	@#n
+	100	-(Rn)
+	101	@-(Rn)
+	110	X(Rn)	n
+	111	@X(Rn)	@n
+
+SP and PC autoincrement and autodecrement always add/subtract 2, even for byte data.
+When pushing bytes, the odd byte is left unmodified.
+
+Instructions:
+
+b in instructions is 0 for word, 1 for byte
+
+Single-operand group:		c ccc ccc ccc ooo ooo
+	clr(b)			b 000 101 000 ddd ddd
+	com(b)			b 000 101 001 ddd ddd
+	inc(b)			b 000 101 010 ddd ddd
+	dec(b)			b 000 101 011 ddd ddd
+	neg(b)			b 000 101 100 ddd ddd
+	adc(b)			b 000 101 101 ddd ddd
+	sbc(b)			b 000 101 110 ddd ddd
+	tst(b)			b 000 101 111 ddd ddd
+	ror(b)			b 000 110 000 ddd ddd
+	rol(b)			b 000 110 001 ddd ddd
+	asr(b)			b 000 110 010 ddd ddd
+	asl(b)			b 000 110 011 ddd ddd
+	jmp			0 000 000 001 ddd ddd
+	swab			0 000 000 011 ddd ddd
+	mfps			1 000 110 111 ddd ddd
+	mtps			1 000 110 100 sss sss
+	sxt			0 000 110 111 ddd ddd
+	tstset			0 000 111 010 ddd ddd
+	wrtlck			0 000 111 011 ddd ddd
+
+Double-operand group:		c ccc sss sss ddd ddd
+	bit(b)			b 011 sss sss ddd ddd
+	bic(b)			b 100 sss sss ddd ddd
+	bis(b)			b 101 sss sss ddd ddd
+	add			0 110 sss sss ddd ddd
+	sub			1 110 sss sss ddd ddd
+	mov(b)			b 001 sss sss ddd ddd
+	cmp(b)			b 010 sss sss ddd ddd
+
+Operand-and-register group:	c ccc ccc rrr sss sss
+	ash			0 111 010 rrr sss sss
+	ashc			0 111 011 rrr sss sss
+	div			0 111 001 rrr sss sss
+	mul			0 111 000 rrr sss sss
+	xor			0 111 100 rrr ddd ddd
+
+Branch group:			c ccc ccc coo ooo ooo
+	br			0 000 000 1oo ooo ooo
+	bne			0 000 001 0oo ooo ooo
+	beq			0 000 001 1oo ooo ooo
+	bpl			1 000 000 0oo ooo ooo
+	bmi			1 000 000 1oo ooo ooo
+	bvc			1 000 010 0oo ooo ooo
+	bvs			1 000 010 1oo ooo ooo
+	bcc			1 000 011 0oo ooo ooo
+	bcs			1 000 011 1oo ooo ooo
+	bge			0 000 010 0oo ooo ooo
+	blt			0 000 010 1oo ooo ooo
+	bgt			0 000 011 0oo ooo ooo
+	ble			0 000 011 1oo ooo ooo
+	bhi			1 000 001 0oo ooo ooo
+	blos			1 000 001 1oo ooo ooo
+	bhis			1 000 011 0oo ooo ooo
+	blo			1 000 011 1oo ooo ooo
+
+jsr:				0 000 100 rrr ddd ddd
+rts:				0 000 000 010 000 rrr
+
+Trap group:			c ccc ccc ccc ccc ccc
+	iot			0 000 000 000 000 100
+	emt			1 000 100 0nn nnn nnn
+	trap			1 000 100 1nn nnn nnn
+	bpt			0 000 000 000 000 011
+
+sob:				0 111 111 rrr ooo ooo
+mark:				0 000 110 100 nnn nnn
+csm:				0 000 111 000 ddd ddd
+spl:				0 000 000 010 011 nnn
+
+Operate group:			c ccc ccc ccc ccc ccc
+	halt			0 000 000 000 000 000
+	wait			0 000 000 000 000 001
+	rti			0 000 000 000 000 010
+	reset			0 000 000 000 000 101
+	rtt			0 000 000 000 000 110
+	nop			0 000 000 010 100 000
+	mfpt			0 000 000 000 000 111
+
+Condition code group:		0 000 000 010 1xn zvc
+	clc			0 000 000 010 100 001
+	clv			0 000 000 010 100 010
+	clz			0 000 000 010 100 100
+	cln			0 000 000 010 101 000
+	ccc			0 000 000 010 101 111
+	sec			0 000 000 010 110 001
+	sev			0 000 000 010 110 010
+	sez			0 000 000 010 110 100
+	sen			0 000 000 010 111 000
+	scc			0 000 000 010 111 111
+
+Previous space group:		c ccc ccc ccc ooo ooo
+	mtpd			1 000 110 110 sss sss
+	mtpi			0 000 110 110 sss sss
+	mfpd			0 000 110 101 sss sss
+	mfpi			1 000 110 101 sss sss
+
+This leaves the following ranges undefined:
+
+0 000 000 000 001 000 .. 0 000 000 000 111 111	000010..000077
+0 000 000 010 001 000 .. 0 000 000 010 010 111	000210..000227
+0 000 000 010 110 000 (alone)
+0 000 111 001 000 000 .. 0 000 111 001 111 111	007100..007177
+0 000 111 100 000 000 .. 0 000 111 111 111 111	007400..007777
+0 111 101 000 000 000 .. 0 111 110 111 111 111	075000..076777
+1 000 111 000 000 000 .. 1 000 111 111 111 111	107000..107777
+1 111 000 000 000 000 .. 1 111 111 111 111 111	170000..177777
+
+17xxxx is used for floating point; see below.
+
+Instruction descriptions:
+
+* meaning:
+	n	gets high bit of result
+	z	set iff result is ==0
+	v	set iff signed overflow occurred
+	c	set iff unsigned overflow occurred
+
+	nzvc (0/1/-/*/@)
+clr(b)	0100	dst = 0
+com(b)	**01	dst = ~ dst
+inc(b)	***-	dst ++
+dec(b)	***-	dst --
+neg(b)	***@	dst = - dst
+		C: cleared iff result is 0
+tst(b)	**00	compare dst with 0
+wrtlck	**0-	Write r0 into dst using bus lock.  Rn dst traps to 10.
+tstset	**0@	Reads dst into r0; writes r0|1 into dst, all atomically.  Rn dst traps to 10.
+		C: gets low bit of value read
+asr(b)	**@@	dst >>= 1, signed
+		V: gets N^C
+		C: gets bit shifted out of dst
+asl(b)	**@@	dst <<= 1
+		V: gets N^C
+		C: gets bit shifted out of dst
+ror(b)	**@@	Rotate dst and C right one bit (circular shift through C)
+		V: gets N^C
+		C: per description
+rol(b)	**@@	Rotate dst and C left one bit (circular shift through C)
+		V: gets N^C
+		C: per description
+swab	@@00	Swap bytes in dst (dst must be word address; what happens if not is unspecified)
+		N: set if resulting low byte is <0
+		Z: set if resulting low byte is 0
+adc(b)	****	dst += C
+sbc(b)	****	dst -= C
+sxt	-*0-	dst = N ? ~0 : 0;
+mfps	**0-	dst = PS<7:0>, dst treated as byte; mode 0 sign-extends into high half
+mtps	@@@@	PS<7:0> = dst, except as noted:
+		T bit cannot be set this way
+		priority can be changed only in kernel mode
+mov(b)	**0-	src = dst; mode 0 for dst of movb sign-extends into high half
+cmp(b)	****	src - dst, result thrown away after setting ccodes (backwards from sub instr)
+add	****	dst += src
+sub	****	dst -= src
+ash	**@@	reg signededly shifted src bits; src<0 is right, src>0 is left (only low six bits of src are used)
+		V: set iff (doc says "if") high bit of register changed during shift
+		C: last bit shifted out of reg (what if src==0?)
+ashc	**@@	If reg is even, the 32-bit word whose high half is in reg and low half is in reg+1 is
+		shifted as for ash (doc doesn't say whether src<0 is signed shift or not)
+		If reg is odd, its 16-bit contents are rotated circularly right src bits.
+		As with ash, only the low six bits of src are used.
+		V: set if(f) high bit changes during shift
+		C: loaded with last bit shifted out of 32-bit operand (what if src==0?)
+mul	**0@	reg and src are multipled; the 32-bit product is stored in reg and reg|1 (which half where?);
+		the low half is stored last, so if reg is odd, the high half is lost.
+		C: set iff result is < -32768 or > 32767.
+div	**@@	The 32-bit integer in reg and reg|1 is divided by src; quotient is left in reg.
+		Remainder is same sign as dividend.  reg "must be even", but what if not?
+		V: set if src==0 or if quotient would exceed 15 bits
+		C: set if src==0
+bit(b)	**0-	src & dst; result thrown away after setting ccodes
+bic(b)	**0-	dst &= ~src
+bis(b)	**0-	dst |= src
+xor	**0-	dst ^= reg
+
+Offset is in words relative to pc, which points just after the branch instruction.
+
+		branch when
+br		1
+bne		!Z
+beq		Z
+bpl		!N
+bmi		N
+bvc		!V
+bvs		V
+bcc/bhis	!C
+bcs/blo		C
+bge		N==V		[N^V==0]
+blt		N!=V		[N^V==1]
+bgt		(N==V)&&!Z	[Z|(N^V)==0]
+ble		(N!=V)||Z	[Z|(N^V)==1]
+bhi		!(C|Z)		[C|Z==0]
+blos		C|Z		[C|Z==1]
+
+jmp		if dst is mode 0, trap to 10 (can't execute out of registers, sigh)
+jsr		tmp = dst; -(sp) = reg; reg = pc; pc = tmp;
+rts		pc = reg; reg = (sp)+;
+sob		if (--reg != 0) pc -= (2 * offset); ccodes not affected; offset is _not_ signed.
+
+emt		trap through 30
+trap		trap through 34
+bpt		trap through 14
+iot		trap through 20
+rti		pc = (sp)+; ps = (sp)+;
+		this instruction can set the T bit in the PS, cannot increase priority, cannot clear PS<11>.
+		if the restored PS has T set, trace trap occurs before next instruction
+rtt		pc = (sp)+; ps = (sp)+;
+		if T is set in restored PS, trace trap is deferred one instruction; otherwise as rti.
+mark		sp = pc + (2 * nn); pc = r5; r5 = (sp)+
+spl		ps<7:5> = nn; works only in kernel mode; in user/supervisor, is nop (*not* a trap).
+csm		if (!MMR3<3> || not in kernel mode) trap through 10 in kernel mode
+		else	supervisor SP = kernel SP
+			tmp<15:4> = PS<15:4>
+			tmp<3:0> = 0
+			PS<13:12> = PS<15:14>
+			PS<15:14> = 1
+			PS<4> = 0
+			-(SP) = tmp
+			-(SP) = PC
+			-(SP) = dst
+			PC = (10) [in supervisor space]
+halt		trap through 4 unless kernel mode, in which case per halt option.
+wait		if not in kernel mode, nop; else, wait until an interrupt happens.
+		(RTI will of course return to instruction after the wait, that being where pc points.)
+reset		perform a bus reset, or something like it.
+mfpt		r0 = 5, 5 being a magic number for kdj11-a.
+mtpd/mtpi	pops a word off the current mode's stack and stores it into dst.  dst's address is computed
+		using the current mode and memory map, but the final store uses the previous mode's memory map.
+		current mode is ps<15:14>; previous is ps<13:12>.  ccodes affected **0-.
+mfpd/mfpi	like mtpd/mtpi, but fetches from previous space and pushes on the stack. ccodes **0-.
+		when current mode and previous mode are both user, mfpi turns into mfpd.
+se*/cl*		modify ccodes per low five bits of instruction
+
+T-bit:
+	A trace trap (trap through 14) occurs after the execution of any instruction which was
+	fetched with T set in the PS.  In particular, a trace trap occurs after an instruction
+	which clears T, but started with T set.
+
+Floating point instructions:
+
+Single operand:		1 111 ccc ccc ooo ooo
+Double operand:		1 111 ccc caa ooo ooo
+
+c = opcode
+a = accumulator
+s = src
+d = dst
+S = fsrc
+D = fdst
+
+instr		bits			nzvc	description
+abs[fd]		1 111 000 110 DDD DDD	0*00	dst = fabs(dst)
+add[fd]		1 111 010 0aa SSS SSS	***0	acc += src
+cfcc		1 111 000 000 000 000	----	Copy fccodes into ccodes; fccodes remain unchanged
+clr[fd]		1 111 000 100 DDD DDD	0100	dst = 0
+cmp[fd]		1 111 011 1aa SSS SSS	**00	src - acc; result thrown away after setting fccodes, except that if both
+						operands have biased exponent 0, acc will get an exact 0 stored in it.
+div[fd]		1 111 100 1aa SSS SSS	***0	ac /= src; if src == 0, FEC=4 and interrupt before execution.
+ldcdf/ldcfd	1 111 111 1aa SSS SSS	***-	ac = src; if FD=0, src is double and is chopped (FT=1) or rounded (FT=0)
+						to single and stored in acc; else FD=1, src is single and is extended
+						(with 0s) to double and stored in acc.
+ldc[il][fd]	1 111 111 0aa sss sss	**00	ac = src; convert from integer to floating.  If FL, 32-bit int, else 16;
+						if FD, to double, else single.  If FL and src is Rn or #X, supplied 16
+						bits are the high 16 of the value to be converted (I think).
+ldexp		1 111 110 1aa sss sss	***0	Set acc's unbiased exponent to src (that is, set its biased exponent to
+						src+0200).  src>0177 is overflow; src<-0177 is underflow.
+						No trap if -0 in AC, even if FIUV.
+ld[fd]		1 111 010 1aa SSS SSS	**00	acc = src;
+ldfps		1 111 000 001 sss sss	@@@@	Load FPS from src.  Note that bits 4, 12, 13 are stuck 0.  (fccodes are
+						of course loaded as part of the operation.)
+mod[fd]		1 111 001 1aa SSS SSS	**@0	Multiply acc by src giving prod (a conceptual temporary).  Represent
+						prod as N+g, for N integer and 0<=fabs(g)<1; both N and g have the same
+						sign as prod.  Store g in acc; if acc is even, store N in acc|1.
+						prod is generated to only 59 bits.
+						Five cases: let L be 24 or 56 for float or double resp.
+						1) prod overflows and FIV is set: acc|1=N chopped to L bits; acc=0.
+						   exp(N) is too small by 0400 and -0 may be stored in acc|1.
+						   if FIV is clear, acc|1=0, acc=0, and -0 will never be stored.
+						2) if 1<<L <= abs(prod) and no overflow, acc|1=N chopped to L bits; acc=0.
+						   sign and exponent of N are correct, but low bits are lost.
+						3) if 1 <= abs(prod) < 1<<L, acc|1=N, acc=g.  N is exact; g is chopped or
+						   rounded according to FT; if rounded, 1 may be stored for g.
+						   because prod is generated to only 59 bits, g may be inexact if N>8.
+						4) if abs(prod) < 1, acc|1=0, acc=g; g may be rounded to 1.
+						5) prod underflows and FIU is set: acc|1=0 and acc=g.
+						   exp(g) is too large by 0400, except for 0, which is correct.
+						   interrupt will of course occur, and -0 may be stored in acc.
+						V: set iff prod overflows
+						other fcc bits are set based on acc, not acc|1.
+mul[fd]		1 111 001 0aa SSS SSS	***0	acc *= src
+neg[fd]		1 111 000 111 DDD DDD	**00	dst = - dst; if FIUV is set, trap on -0 before execution
+setd		1 111 000 000 001 001	----	FD = 1 (enter double mode)
+setf		1 111 000 000 000 001	----	FD = 0 (enter float mode)
+seti		1 111 000 000 000 010	----	FL = 0 (enter 16-bit integer mode)
+setl		1 111 000 000 001 010	----	FL = 1 (enter 32-bit integer mode)
+stcfd/stcdf	1 111 110 0aa DDD DDD	***0	dst = acc; if FD=0, acc is single and is extended (with 0s) to double and
+						stored in dst; FD=1, acc is double and is chopped (FT=1) or rounded (FT=0)
+						to single and stored in dst.
+						trap on -0 cannot occur because src is an acc.  overflow can happen when
+						FD=1 and FT=0; dst will get overflowed result (which will be +0 or -0).
+stc[fd][il]	1 111 101 1aa ddd ddd	**0@	Convert acc to integer, where float and int sizes come from FD and FL.
+						Result is stored in dst; if dst is Rn or #X and FL=1, only high 16 bits
+						are stored.  If converted value would be out of range, 0 is stored and
+						C is set (C is cleared otherwise).  "out of range" is oddly defined; the
+						converted value (cval) is in range iff -JL-1 < cval < JL+1, where JL is
+						either (1<<15)-1 or (1<<32)-1 depending on FL.  (The book says 15 and 32;
+						surely it should be either 16/32 or 15/31.)  Conversion is done by
+						chopping at the binary point, even if FT=0.
+						NOTE: ccodes are set equal to fccodes at end of instruction!
+stexp		1 111 101 0aa ddd ddd	**00	Convert acc's exponent from excess-0200 to 2's-complement and store in
+						dst.  No check for -0 is made.
+						NOTE: ccodes are set equal to fccodes at end of instruction!
+st[fd]		1 111 100 0aa DDD DDD	----	dst = acc; these will store a -0 without interrupt.  -0 can be present
+						in acc two ways: underflow/overflow with corresponding interrupt bit
+						set, or ldf/ldd instruction with FIUV cleared.
+stfps		1 111 000 010 ddd ddd	????	dst = FPS
+stst		1 111 000 011 ddd ddd	????	dst = FEC; dst+2 = FEA; if dst is Rn or #X, only FEC is saved.  Note that
+						FEC and FEA are not cleared for successful instructions.
+sub[fd]		1 111 011 0aa SSS SSS	***0	ac -= src
+tst[fd]		1 111 000 101 DDD DDD	**00	Test dst.  If -0 and FIUV, trap before execution.

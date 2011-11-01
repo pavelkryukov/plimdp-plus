@@ -1,0 +1,26 @@
+stati = 0177560
+datai = 0177562
+stato = 0177564
+datao = 0177566
+
+. = 1000
+
+start:
+	mov	#start,sp
+	mov	#hello,r1
+	jsr	pc,puts
+	halt
+
+puts:	movb	(r1)+,r0
+	jsr	pc,putchar
+	tstb	r0
+	bne	puts
+	rts	pc
+
+putchar:tstb	@#stato
+	bpl	putchar
+	movb	r0,@#datao
+	rts	pc
+
+hello:	.asciz	/Hello/<15><12>
+	.end	start
