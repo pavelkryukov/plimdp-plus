@@ -33,7 +33,7 @@ class Core {
 
 //STRUCTURE*************************************************************
     static struct Instruction {
-		std::string name;
+        std::string name;
         WORD code;
         WORD mask;
         InstrType type;
