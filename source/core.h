@@ -16,12 +16,10 @@
 #include "./memory.h"
 
 namespace PlimDP {
-
 class Core {
   private:
     Memory* const mem;
 
-//GLOBAL****************************************************************
     WORD opcode, reg[8], oldPC;
     BYTE dd, ss, mo, re, last_mo;
     SBYTE xx;
@@ -29,9 +27,7 @@ class Core {
     BYTE idx, countfrsp;
     WORD *ptrD, *ptrS;
     BYTE pcsmflag, pcsmcnt;
-    
 
-//STRUCTURE*************************************************************
     static struct Instruction {
         std::string name;
         WORD code;
@@ -42,7 +38,6 @@ class Core {
     } instrs[];
     static size_t instrs_s;
 
-//SPECIAL FUNCTIONS*****************************************************
     void f_adcb();
     void f_adc();
     void f_add();
@@ -138,31 +133,29 @@ class Core {
     void f_wait();
     void f_xor();
 
-//PRINTER***************************************************************
     void print_mn();
     void print_reg();
     void print_op();
     void print_aim();
     void print_end();
-//DECODER***************************************************************
+
     void select_operand(Ident ident);
     BYTE decode_m(BYTE a);
     BYTE decode_r(BYTE a);
     void decode(KeyRW mode);
-//MAIN_FUNCTIONS********************************************************
+
     BYTE find_instrs();
     void prep_devices();
     void output();
   public:
     Core();
     ~Core();
-//STARTER***************************************************************
+
     inline void load(const std::string & file) {
         mem->load(file);
     }
     void start(KeyRW keyRW);
 };
-
 }
 
 #endif

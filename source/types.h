@@ -6,7 +6,7 @@
  * Copyright 2009 (C) Boris Belousov
  * Copyright 2011 (C) Pavel Kryukov (remastering)
 */
- 
+
 #ifndef TYPES_H
 #define TYPES_H
 
@@ -43,7 +43,6 @@ enum Ident {
     SRC,
     DTN,
 };
-
 }
 
 #endif

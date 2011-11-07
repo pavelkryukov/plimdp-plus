@@ -9,7 +9,7 @@
 
 #include <cstdio>
 
-#include <iostream>
+#include <string>
 
 #include "./memory.h"
 
@@ -24,21 +24,21 @@ void Memory::load(const std::string & file) {
     WORD a, c;
     WORD i, k = 0;
     fd = std::fopen(file.c_str(), "r");
-    while(std::fscanf(fd, "%hx %hx", &a, &c) == 2) {
+    while (std::fscanf(fd, "%hx %hx", &a, &c) == 2) {
         dat[k++] = a;
         dat[k++] = c;
-        for(i = 0; i < c; i++)
-            if(std::fscanf(fd, "%hx", (WORD*)&b) == 1)
+        for (i = 0; i < c; i++)
+            if (std::fscanf(fd, "%hx", reinterpret_cast<WORD*>(&b)) == 1)
                 writebyte(a+i, b);
     }
     fclose(fd);
 }
 
 BYTE Memory::checkmem(DWORD index, BYTE kol) {
-    if(index < MEMSIZE) {
-        if(kol == 1)
+    if (index < MEMSIZE) {
+        if (kol == 1)
             return 1;
-        if(kol == 2 && index % 2 == 0)
+        if (kol == 2 && index % 2 == 0)
             return 1;
     }
     std::printf("Memory check failed");
@@ -46,38 +46,36 @@ BYTE Memory::checkmem(DWORD index, BYTE kol) {
 }
 
 void Memory::writebyte(DWORD index, BYTE x) {
-    if(checkmem(index, 1))
+    if (checkmem(index, 1))
         memory[index] = x;
     else
         std::printf("Error: writing byte outside the memory");
 }
 
 void Memory::writeword(DWORD index, WORD x) {
-    if(checkmem(index, 2)) {
-        WORD* ptr = (WORD*)&memory[index];
+    if (checkmem(index, 2)) {
+        WORD* ptr = reinterpret_cast<WORD*>(&memory[index]);
         *ptr = x;
-    }
-    else
+    } else {
         std::printf("Error: writing word outside the memory or bad address");
+    }
 }
 BYTE Memory::readbyte(DWORD index) {
-    if(checkmem(index, 1))
+    if (checkmem(index, 1)) {
         return memory[index];
-    else {
+    } else {
         std::printf("Error: reading byte outside the memory");
         return 0;
     }
 }
 
 WORD Memory::readword(DWORD index) {
-    if(checkmem(index, 2)) {
-        WORD* ptr = (WORD*)&memory[index];
+    if (checkmem(index, 2)) {
+        WORD* ptr = reinterpret_cast<WORD*>(&memory[index]);
         return *ptr;
-    }
-    else {
+    } else {
         std::printf("Error: reading word outside the memory or bad address");
         return 0;
     }
 }
-
 }
