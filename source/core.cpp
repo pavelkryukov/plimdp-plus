@@ -585,13 +585,13 @@ void Core::f_iot() {
     std::printf("f_iot");
 }
 void Core::f_jmp() {
-    PC = 2 * (ptrD - reinterpret_cast<WORD*>(mem->memory));
+    PC = 2 * (ptrD - ptr0);
 }
 void Core::f_jsr() {
     SP -= 2;
     mem->writeword(SP, *ptrS);
     *ptrS = PC;
-    PC = 2 * (ptrD - reinterpret_cast<WORD*>(mem->memory));
+    PC = 2 * (ptrD - ptr0);
 }
 void Core::f_mark() {
     std::printf("f_mark");
@@ -608,7 +608,7 @@ void Core::f_mfps() {
 void Core::f_movb() {
     BYTE temp;
     if (last_mo) {
-        if (2 * (ptrS - reinterpret_cast<WORD*>(mem->memory)) == IDATA)
+        if (2 * (ptrS - ptr0) == IDATA)
             *ptrS = getchar();
     }
     temp = (BYTE) (*ptrS & 0xff);
@@ -624,7 +624,7 @@ void Core::f_movb() {
 }
 void Core::f_mov() {
     if (last_mo) {
-        if (2 * (ptrS - reinterpret_cast<WORD*>(mem->memory)) == IDATA)
+        if (2 * (ptrS - ptr0) == IDATA)
             *ptrS = getchar();
     }
 
@@ -1011,7 +1011,7 @@ void Core::select_operand(Ident ident) {
             break;
         case 1:
             if (mem->checkmem(reg[re], 1)) {
-                ptr = reinterpret_cast<WORD*>(&mem->memory[reg[re]]);
+                ptr = (WORD*)((BYTE*)ptr0 + reg[re]);
                 switch (ident) {
                     case SRC:
                         ptrS = ptr;
@@ -1026,7 +1026,7 @@ void Core::select_operand(Ident ident) {
             break;
         case 2:
             if (mem->checkmem(reg[re], 1)) {
-                ptr = reinterpret_cast<WORD*>(&mem->memory[reg[re]]);
+                ptr = (WORD*)((BYTE*)ptr0 + reg[re]);
                 switch (ident) {
                     case SRC:
                         ptrS = ptr;
@@ -1046,8 +1046,7 @@ void Core::select_operand(Ident ident) {
         case 3:
             if (mem->checkmem(reg[re], 2) &&
                 mem->checkmem(mem->readword(reg[re]), 1)) {
-                ptr = reinterpret_cast<WORD*>
-                      (&mem->memory[mem->readword(reg[re])]);
+                ptr = (WORD*)((BYTE*)ptr0 + mem->readword(reg[re]));
                 switch (ident) {
                     case SRC:
                         ptrS = ptr;
@@ -1067,7 +1066,7 @@ void Core::select_operand(Ident ident) {
             else if (instrs[idx].size == 2 || re >= 6)
                 reg[re] -= 2;
             if (mem->checkmem(reg[re], 1)) {
-                ptr = reinterpret_cast<WORD*>(&mem->memory[reg[re]]);
+                ptr = (WORD*)((BYTE*)ptr0 + reg[re]);
                 switch (ident) {
                     case SRC:
                         ptrS = ptr;
@@ -1084,8 +1083,7 @@ void Core::select_operand(Ident ident) {
             reg[re] -= 2;
             if (mem->checkmem(reg[re], 2) &&
                 mem->checkmem(mem->readword(reg[re]), 1)) {
-                    ptr = reinterpret_cast<WORD*>
-                          (&mem->memory[mem->readword(reg[re])]);
+                    ptr = (WORD*)((BYTE*)ptr0 + mem->readword(reg[re]));
                     switch (ident) {
                     case SRC:
                         ptrS = ptr;
@@ -1103,8 +1101,7 @@ void Core::select_operand(Ident ident) {
             PC += 2;
             WORD* ptr;
             if (mem->checkmem((WORD)(reg[re] + offset), 1)) {
-                ptr = reinterpret_cast<WORD*>
-                      (&mem->memory[(WORD)(reg[re] + offset)]);
+                ptr = (WORD*)((BYTE*)ptr0 + (WORD)(reg[re] + offset));
                 switch (ident) {
                     case SRC:
                         ptrS = ptr;
@@ -1122,9 +1119,7 @@ void Core::select_operand(Ident ident) {
             PC += 2;
             if (mem->checkmem((WORD)(reg[re] + offset), 2) &&
                 mem->checkmem(mem->readword((WORD)(reg[re] + offset)), 1)) {
-                ptr = reinterpret_cast<WORD*>
-                           (&mem->memory[mem->readword(
-                            (WORD)(reg[re] + offset))]);
+                ptr = (WORD*)((BYTE*)ptr0 + mem->readword((WORD)(reg[re] + offset)));
                 switch (ident) {
                     case SRC:
                         ptrS = ptr;
@@ -1247,6 +1242,7 @@ void Core::output() {
 }
 
 Core::Core() : mem(new Memory()),
+                       ptr0(reinterpret_cast<WORD*>(mem->memory)),
                        opcode(0),
                        oldPC(0),
                        dd(0),
