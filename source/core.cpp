@@ -854,7 +854,7 @@ void Core::f_xor() {
 /*PRINTER***************************************************************/
 void Core::print_mn() {
     std::printf("\n%06o: ", PC - 2);
-    std::printf("%s\n", instrs[idx].name.c_str());
+    std::printf("%s\t", instrs[idx].name.c_str());
     countfrsp = 24;
 }
 void Core::print_reg() {
