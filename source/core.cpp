@@ -876,22 +876,12 @@ void Core::print_reg() {
         std::printf("[%06o %06o %06o]\n", opcode, temp1, temp2);
     }
     pcsmflag = pcsmcnt = 0;
-    if (N == 1)
-        std::printf("N");
-    else
-        std::printf("-");
-    if (Z == 1)
-        std::printf("Z");
-    else
-        std::printf("-");
-    if (V == 1)
-        std::printf("V");
-    else
-        std::printf("-");
-    if (C == 1)
-        std::printf("C");
-    else
-        std::printf("-");
+    
+    std::printf(N == 1 ? "N" : "-");
+    std::printf(Z == 1 ? "Z" : "-");
+    std::printf(V == 1 ? "V" : "-");
+    std::printf(C == 1 ? "C" : "-");
+                
     std::printf(" ");
     for (i = 0; i < 8; i++)
         std::printf("%hd:%06o ", i, reg[i]);
