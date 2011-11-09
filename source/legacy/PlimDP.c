@@ -90,7 +90,7 @@ WORD readword(DWORD index) {
 //LOAD_FUNCTIONS********************************************************
 void load(char* file) {
 	FILE *fd;
-	BYTE b;
+	WORD b;
 	WORD a, c;
 	WORD i, k = 0;
 	fd = fopen(file, "r");
