@@ -16,22 +16,24 @@
 namespace PlimDP {
 
 Memory::Memory() {
+    for (unsigned i = 0; i < MEMSIZE; ++i) {
+        memory[i] = 0;
+    }
 }
 
 void Memory::load(const std::string & file) {
     std::FILE *fd;
-    BYTE b;
-    WORD a, c;
+    WORD a, b, c;
     WORD i, k = 0;
     fd = std::fopen(file.c_str(), "r");
     while (std::fscanf(fd, "%hx %hx", &a, &c) == 2) {
         dat[k++] = a;
         dat[k++] = c;
         for (i = 0; i < c; i++)
-            if (std::fscanf(fd, "%hx", reinterpret_cast<WORD*>(&b)) == 1)
+            if (std::fscanf(fd, "%hx", &b) == 1)
                 writebyte(a+i, b);
     }
-    fclose(fd);
+    std::fclose(fd);
 }
 
 BYTE Memory::checkmem(DWORD index, BYTE kol) {
