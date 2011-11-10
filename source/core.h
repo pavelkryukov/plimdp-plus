@@ -31,7 +31,6 @@ class Core {
     
     BYTE dd, ss, mo, re;
     SBYTE xx;
-    BYTE idx;
     
     // Pointers
     struct Pointer {
@@ -167,10 +166,10 @@ class Core {
     void f_xor();
 
     // Decoder
-    Pointer select_operand();
+    Pointer select_operand(BYTE idx);
     BYTE decode_m(BYTE a);
     BYTE decode_r(BYTE a);
-    void decode(WORD opcode, KeyRW mode);
+    void decode(WORD opcode, BYTE idx, KeyRW mode);
     
     // Dump
     friend class CoreDump;    

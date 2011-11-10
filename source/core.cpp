@@ -838,7 +838,7 @@ void Core::f_xor() {
 }
 
 /*DECODER***************************************************************/
-Core::Pointer Core::select_operand() {
+Core::Pointer Core::select_operand(BYTE idx) {
     Core::Pointer pointer;
     WORD offset;
     switch (mo) {
@@ -914,7 +914,7 @@ BYTE Core::decode_m(BYTE a) {
 BYTE Core::decode_r(BYTE a) {
     return a & 07;
 }
-void Core::decode(WORD opcode, KeyRW mode) {
+void Core::decode(WORD opcode, BYTE idx, KeyRW mode) {
     switch (instrs[idx].type) {
         case Instr::T_SSDD:
             ss = (opcode & 0007700) >> 6;
@@ -924,13 +924,13 @@ void Core::decode(WORD opcode, KeyRW mode) {
                 dump->op();
                 dump->comma();
             }
-            pS = select_operand();
+            pS = select_operand(idx);
             dd = opcode & 0000077;
             mo = decode_m(dd);
             re = decode_r(dd);
             if (mode == WRITE)
                 dump->op();
-            pD = select_operand();
+            pD = select_operand(idx);
             break;
         case Instr::T_DD:
             dd = opcode & 0000077;
@@ -938,7 +938,7 @@ void Core::decode(WORD opcode, KeyRW mode) {
             re = decode_r(dd);
             if (mode == WRITE)
                 dump->op();
-            pD = select_operand();
+            pD = select_operand(idx);
             break;
         case Instr::T_XX:
             xx = opcode & 0xFF;
@@ -953,12 +953,12 @@ void Core::decode(WORD opcode, KeyRW mode) {
                 dump->op();
                 dump->comma();
             }
-            pS = select_operand();
+            pS = select_operand(idx);
             mo = 0;
             re = (opcode & 0000700) >> 6;
             if (mode == WRITE)
                 dump->op();
-            pD = select_operand();
+            pD = select_operand(idx);
             break;
         case Instr::T_RDD:
             mo = 0;
@@ -967,20 +967,20 @@ void Core::decode(WORD opcode, KeyRW mode) {
                 dump->op();
                 dump->comma();
             }
-            pS = select_operand();
+            pS = select_operand(idx);
             dd = opcode & 0000077;
             mo = decode_m(dd);
             re = decode_r(dd);
             if (mode == WRITE)
                 dump->op();
-            pD = select_operand();
+            pD = select_operand(idx);
             break;
         case Instr::T_R:
             mo = 0;
             re = opcode & 0000007;
             if (mode == WRITE)
                 dump->op();
-            pD = select_operand();
+            pD = select_operand(idx);
             break;
         case Instr::T_NONE:
             break;
@@ -1004,8 +1004,7 @@ Core::Core() : mem(new Memory()),
                        ss(0),
                        mo(0),
                        re(0),
-                       xx(0),
-                       idx(0) {
+                       xx(0) {
     dump = new CoreDump(this);
     for (unsigned i = 0; i < sizeof(reg) / sizeof(reg[0]); ++i) {
         reg[i] = 0;
@@ -1024,14 +1023,14 @@ void Core::start(KeyRW keyRW) {
     do {
         opcode = mem->readword(PC);        //
         PC += 2;                    //
-        idx = find_instrs(opcode);        //
+        BYTE idx = find_instrs(opcode);        //
 
         if (keyRW == WRITE) {
             dump->mn();
-            decode(opcode, WRITE);            
+            decode(opcode, idx, WRITE);            
             dump->oldPC = PC;
         } else {
-            decode(opcode, READ);
+            decode(opcode, idx, READ);
         }
 
         (this->*(instrs[idx].exec))();            //
