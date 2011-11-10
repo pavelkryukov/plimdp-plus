@@ -176,8 +176,6 @@ class Core {
     void decode(KeyRW mode);
 
     BYTE find_instrs();
-    void prep_devices();
-    void output();
   public:
     Core();
     ~Core();

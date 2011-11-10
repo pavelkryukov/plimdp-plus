@@ -17,11 +17,6 @@ namespace PlimDP {
 #define PC (reg[7])
 #define SP (reg[6])
 
-#define ISTAT 0177560
-#define IDATA 0177562
-#define OSTAT 0177564
-#define ODATA 0177566
-
 Core::Instruction Core::instrs[] = {
     {"adcb", 0105500, 0177700, T_DD,   &Core::f_adcb, 1},
     {"adc",  0005500, 0177700, T_DD,   &Core::f_adc,  2},
@@ -607,10 +602,6 @@ void Core::f_mfps() {
 }
 void Core::f_movb() {
     BYTE temp;
-    if (last_mo) {
-        if (pS.type == Pointer::MEMORY && pS.index == IDATA)
-            this->writeword(pS, getchar());
-    }
     temp = (BYTE) (this->readword(pS) & 0xff);
 
     N = (temp >> 7) & 1;
@@ -623,11 +614,6 @@ void Core::f_movb() {
         this->writeword(pD, (SBYTE) temp);
 }
 void Core::f_mov() {
-    if (last_mo) {
-        if (pS.type == Pointer::MEMORY && pS.index == IDATA)
-            this->writeword(pS, getchar());
-    }
-
     N = (this->readword(pS) >> 15) & 1;
     Z = this->readword(pS) == 0 ? 1 : 0;
     V = 0;
@@ -1234,16 +1220,6 @@ BYTE Core::find_instrs() {
     std::printf("Such function doesn't exist");
     return 0;
 }
-void Core::prep_devices() {
-    mem->writeword(ISTAT, 0200);
-    mem->writeword(OSTAT, 0200);
-    mem->writeword(IDATA, 0);
-    mem->writeword(ODATA, 0);
-}
-void Core::output() {
-    if (mem->readword(ODATA))
-        std::printf("%c", mem->readword(ODATA));
-}
 
 Core::Core() : mem(new Memory()),
                        opcode(0),
@@ -1272,8 +1248,6 @@ void Core::start(KeyRW keyRW) {
     std::printf("\n---------------- running --------------\n");
     PC = 0x200;
     do {
-        output();
-        prep_devices();
         opcode = mem->readword(PC);        //
         PC += 2;                    //
         idx = find_instrs();        //

@@ -13,6 +13,7 @@
 #include <string>
 
 #include "./types.h"
+#include "./io.h"
 
 namespace PlimDP {
 
@@ -20,11 +21,14 @@ namespace PlimDP {
 #define MEMSIZE (64*K)
 
 class Memory {
+    IO* const io;
+
     WORD dat[K];
     BYTE memory[MEMSIZE];
   public:
 
     Memory();
+    ~Memory();
 
     void load(const std::string & file);
     BYTE checkmem(DWORD index, BYTE kol);
