@@ -14,18 +14,21 @@
 
 #include "./types.h"
 #include "./memory.h"
+#include "./coredump.h"
 
 namespace PlimDP {
 class Core {
   private:
+    friend class CoreDump;
+  
     Memory* const mem;
+    CoreDump* dump;
 
     WORD opcode, reg[8], oldPC;
     BYTE dd, ss, mo, re, last_mo;
     SBYTE xx;
     BYTE N, Z, V, C;
-    BYTE idx, countfrsp;
-    BYTE pcsmflag, pcsmcnt;
+    BYTE idx;
     
     struct Pointer {
         DWORD index;
@@ -163,12 +166,6 @@ class Core {
     void f_tst();
     void f_wait();
     void f_xor();
-
-    void print_mn();
-    void print_reg();
-    void print_op();
-    void print_aim();
-    void print_end();
 
     Pointer select_operand();
     BYTE decode_m(BYTE a);

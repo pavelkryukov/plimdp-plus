@@ -8,9 +8,9 @@
 */
 
 #include <cstdio>
-#include <cstring>
 
 #include "./core.h"
+#include "./coredump.h"
 
 namespace PlimDP {
 
@@ -837,136 +837,6 @@ void Core::f_xor() {
     std::printf("f_xor");
 }
 
-/*PRINTER***************************************************************/
-void Core::print_mn() {
-    std::printf("\n%06o: ", PC - 2);
-    std::printf("%s\t", instrs[idx].name.c_str());
-    countfrsp = 24;
-}
-void Core::print_reg() {
-    BYTE i;
-    WORD temp1, temp2;
-    char frsp = ' ';
-    std::printf("%*c", countfrsp, frsp);
-    if (pcsmflag == 0) {
-        std::printf("[%06o]\n", opcode);
-    } else if (pcsmflag == 1) {
-        temp1 = mem->readword(oldPC - 2);
-        std::printf("[%06o %06o]\n", opcode, temp1);
-    } else if (pcsmflag == 2) {
-        temp2 = mem->readword(oldPC - 2);
-        std::printf("[%06o %06o]\n", opcode, temp2);
-    } else if (pcsmflag == 3) {
-        temp1 = mem->readword(oldPC - 4);
-        temp2 = mem->readword(oldPC - 2);
-        std::printf("[%06o %06o %06o]\n", opcode, temp1, temp2);
-    }
-    pcsmflag = pcsmcnt = 0;
-    
-    std::printf(N == 1 ? "N" : "-");
-    std::printf(Z == 1 ? "Z" : "-");
-    std::printf(V == 1 ? "V" : "-");
-    std::printf(C == 1 ? "C" : "-");
-                
-    std::printf(" ");
-    for (i = 0; i < 8; i++)
-        std::printf("%hd:%06o ", i, reg[i]);
-}
-void Core::print_op() {
-    WORD nt_cm;
-    nt_cm = mem->readword(PC);
-    pcsmcnt++;
-    switch (mo) {
-        case 0:
-            std::printf("r%ho", re);
-            countfrsp -= 2;
-            break;
-        case 1:
-            std::printf("(r%ho)", re);
-            countfrsp -= 4;
-            break;
-        case 2:
-            if (re == 7) {
-                std::printf("#%06ho", nt_cm);
-                countfrsp -= 7;
-                if (pcsmcnt == 1)
-                    pcsmflag++;
-                else
-                    pcsmflag += 2;
-            } else {
-                std::printf("(r%ho)+", re);
-                countfrsp -= 5;
-            }
-            break;
-        case 3:
-            if (re == 7) {
-                std::printf("@#%06ho", nt_cm);
-                countfrsp -= 8;
-                if (pcsmcnt == 1)
-                    pcsmflag++;
-                else
-                    pcsmflag += 2;
-            } else {
-                std::printf("@(r%ho)+", re);
-                countfrsp -= 6;
-            }
-            break;
-        case 4:
-            std::printf("-(r%ho)", re);
-            countfrsp -= 5;
-            break;
-        case 5:
-            std::printf("@-(r%ho)", re);
-            countfrsp -= 6;
-            break;
-        case 6:
-            if (re == 7) {
-                std::printf("%06ho", nt_cm + PC + 2);
-                countfrsp -= 6;
-                if (pcsmcnt == 1)
-                    pcsmflag++;
-                else
-                    pcsmflag += 2;
-            } else {
-                std::printf("%06ho(r%ho)", nt_cm, re);
-                countfrsp -= 10;
-                if (pcsmcnt == 1)
-                    pcsmflag++;
-                else
-                    pcsmflag += 2;
-            }
-            break;
-        case 7:
-            if (re == 7) {
-                std::printf("@%06ho", nt_cm + PC + 2);
-                countfrsp -= 7;
-                if (pcsmcnt == 1)
-                    pcsmflag++;
-                else
-                    pcsmflag += 2;
-            } else {
-                std::printf("@%06ho(r%ho)", nt_cm, re);
-                countfrsp -= 11;
-                if (pcsmcnt == 1)
-                    pcsmflag++;
-                else
-                    pcsmflag += 2;
-            }
-            break;
-    }
-}
-void Core::print_aim() {
-    std::printf("%06o", PC + 2*xx);
-    countfrsp -= 6;
-}
-void Core::print_end() {
-    std::printf("r0=%06o r2=%06o r4=%06o sp=%06o\n",
-                    reg[0], reg[2], reg[4], SP);
-    std::printf("r1=%06o r3=%06o r4=%06o pc=%06o\n",
-                    reg[1], reg[3], reg[5], PC);
-    std::printf("n=%ho z=%ho v=%ho c=%ho\n",
-                    N, Z, V, C);
-}
 /*DECODER***************************************************************/
 Core::Pointer Core::select_operand() {
     Core::Pointer pointer;
@@ -1052,9 +922,8 @@ void Core::decode(KeyRW mode) {
             mo = decode_m(ss);
             re = decode_r(ss);
             if (mode == WRITE) {
-                print_op();
-                std::printf(",");
-                countfrsp -= 1;
+                dump->op();
+                dump->comma();
             }
             pS = select_operand();
             last_mo = mo;
@@ -1062,7 +931,7 @@ void Core::decode(KeyRW mode) {
             mo = decode_m(dd);
             re = decode_r(dd);
             if (mode == WRITE)
-                print_op();
+                dump->op();
             pD = select_operand();
             break;
         case T_DD:
@@ -1070,38 +939,36 @@ void Core::decode(KeyRW mode) {
             mo = decode_m(dd);
             re = decode_r(dd);
             if (mode == WRITE)
-                print_op();
+                dump->op();
             pD = select_operand();
             break;
         case T_XX:
                 xx = opcode & 0xFF;
             if (mode == WRITE)
-                print_aim();
+                dump->aim();
             break;
         case T_RSS:
                 ss = opcode & 0000077;
             mo = decode_m(ss);
             re = decode_r(ss);
             if (mode == WRITE) {
-                print_op();
-                std::printf(",");
-                countfrsp -= 1;
+                dump->op();
+                dump->comma();
             }
             pS = select_operand();
             last_mo = mo;
             mo = 0;
             re = (opcode & 0000700) >> 6;
             if (mode == WRITE)
-                print_op();
+                dump->op();
             pD = select_operand();
             break;
         case T_RDD:
             mo = 0;
             re = (opcode & 0000700) >> 6;
             if (mode == WRITE) {
-                print_op();
-                std::printf(",");
-                countfrsp -= 1;
+                dump->op();
+                dump->comma();
             }
             pS = select_operand();
             last_mo = mo;
@@ -1109,14 +976,14 @@ void Core::decode(KeyRW mode) {
             mo = decode_m(dd);
             re = decode_r(dd);
             if (mode == WRITE)
-                print_op();
+                dump->op();
             pD = select_operand();
             break;
         case T_R:
             mo = 0;
             re = opcode & 0000007;
             if (mode == WRITE)
-                print_op();
+                dump->op();
             pD = select_operand();
             break;
         case T_NONE:
@@ -1145,10 +1012,8 @@ Core::Core() : mem(new Memory()),
                        last_mo(0),
                        xx(0),
                        N(0), Z(0), V(0), C(0),
-                       idx(0),
-                       countfrsp(0),
-                       pcsmflag(0),
-                       pcsmcnt(0) {
+                       idx(0) {
+    dump = new CoreDump(this);
     for (unsigned i = 0; i < sizeof(reg) / sizeof(reg[0]); ++i) {
         reg[i] = 0;
     }
@@ -1156,6 +1021,7 @@ Core::Core() : mem(new Memory()),
 
 Core::~Core() {
     delete mem;
+    delete dump;
 }
 
 void Core::start(KeyRW keyRW) {
@@ -1166,7 +1032,7 @@ void Core::start(KeyRW keyRW) {
         PC += 2;                    //
         idx = find_instrs();        //
         if (keyRW == WRITE) {
-            print_mn();
+            dump->mn();
             decode(WRITE);
         } else {
             decode(READ);
@@ -1174,10 +1040,10 @@ void Core::start(KeyRW keyRW) {
         oldPC = PC;
         (this->*(instrs[idx].exec))();            //
         if (keyRW == WRITE)
-            print_reg();
+            dump->reg();
     }  while (opcode);
     std::printf("\n---------------- halted ---------------\n");
-    print_end();
+    dump->end();
 }
 
 }  // namespace PlimDP
