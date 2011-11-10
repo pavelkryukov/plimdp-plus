@@ -174,10 +174,7 @@ class Core {
     // Dump
     friend class CoreDump;    
     CoreDump* dump;
-    enum {
-        SILENT,
-        DUMP,
-    } mode;
+    bool dumpMode;
   public:
     Core();
     ~Core();
@@ -187,7 +184,7 @@ class Core {
     }
     
     inline void setDump() {
-        mode = DUMP;
+        dumpMode = true;
     }
     void start();
 };

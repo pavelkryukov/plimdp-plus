@@ -17,6 +17,8 @@ namespace PlimDP {
 #define PC (reg[7])
 #define SP (reg[6])
 
+#define DUMP(OPERATIONS) if (dumpMode) OPERATIONS
+
 Instr Core::instrs[] = {
     {"adcb", 0105500, 0177700, Instr::T_DD,   &Core::f_adcb, 1},
     {"adc",  0005500, 0177700, Instr::T_DD,   &Core::f_adc,  2},
@@ -922,66 +924,54 @@ void Core::decode(WORD opcode, BYTE idx) {
             ss = (opcode & 0007700) >> 6;
             mo = decode_m(ss);
             re = decode_r(ss);
-            if (mode == DUMP) {
-                dump->op();
-                dump->comma();
-            }
+            DUMP( dump->op() );
+            DUMP( dump->comma() );
             pS = select_operand(idx);
             dd = opcode & 0000077;
             mo = decode_m(dd);
             re = decode_r(dd);
-            if (mode == DUMP)
-                dump->op();
+            DUMP( dump->op() );
             pD = select_operand(idx);
             break;
         case Instr::T_DD:
             dd = opcode & 0000077;
             mo = decode_m(dd);
             re = decode_r(dd);
-            if (mode == DUMP)
-                dump->op();
+            DUMP( dump->op() );
             pD = select_operand(idx);
             break;
         case Instr::T_XX:
-            xx = opcode & 0xFF;
-            if (mode == DUMP)
-                dump->aim();
+            xx = opcode & 0xFF;            
+            DUMP( dump->aim() );
             break;
         case Instr::T_RSS:
-                ss = opcode & 0000077;
+            ss = opcode & 0000077;
             mo = decode_m(ss);
             re = decode_r(ss);
-            if (mode == DUMP) {
-                dump->op();
-                dump->comma();
-            }
+            DUMP( dump->op() );
+            DUMP( dump->comma() );
             pS = select_operand(idx);
             mo = 0;
             re = (opcode & 0000700) >> 6;
-            if (mode == DUMP)
-                dump->op();
+            DUMP( dump->op() );
             pD = select_operand(idx);
             break;
         case Instr::T_RDD:
             mo = 0;
             re = (opcode & 0000700) >> 6;
-            if (mode == DUMP) {
-                dump->op();
-                dump->comma();
-            }
+            DUMP( dump->op() );
+            DUMP( dump->comma() );
             pS = select_operand(idx);
             dd = opcode & 0000077;
             mo = decode_m(dd);
             re = decode_r(dd);
-            if (mode == DUMP)
-                dump->op();
+            DUMP( dump->op() );
             pD = select_operand(idx);
             break;
         case Instr::T_R:
             mo = 0;
             re = opcode & 0000007;
-            if (mode == DUMP)
-                dump->op();
+            DUMP( dump->op() );
             pD = select_operand(idx);
             break;
         case Instr::T_NONE:
@@ -1005,7 +995,7 @@ Core::Core() : mem(new Memory()),
                        mo(0),
                        re(0),
                        xx(0),
-                       mode(SILENT) {
+                       dumpMode(false) {
     dump = new CoreDump(this);
     for (unsigned i = 0; i < sizeof(reg) / sizeof(reg[0]); ++i) {
         reg[i] = 0;
@@ -1022,22 +1012,23 @@ void Core::start() {
     PC = 0x200;
     WORD opcode;
     do {
+        // Fetch
         opcode = mem->readword(PC);        //
         PC += 2;                    //
         BYTE idx = find_instrs(opcode);        //
 
-        if (mode == DUMP) {
-            dump->mn(idx);
-            decode(opcode, idx);            
-            dump->oldPC = PC;
-        } else {
-            decode(opcode, idx);
-        }
-
+        DUMP( dump->mn(idx) );
+        
+        // Decode
+        decode(opcode, idx); 
+        
+        DUMP( dump->oldPC = PC );
+        
+        // Execute
         (this->*(instrs[idx].exec))();            //
 
-        if (mode == DUMP)
-            dump->reg(opcode);
+        DUMP( dump->reg(opcode) );
+        
     }  while (opcode);
     std::printf("\n---------------- halted ---------------\n");
     dump->end();
