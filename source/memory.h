@@ -21,8 +21,8 @@ namespace PlimDP {
 
 class Memory {
     WORD dat[K];
-  public:
     BYTE memory[MEMSIZE];
+  public:
 
     Memory();
 
