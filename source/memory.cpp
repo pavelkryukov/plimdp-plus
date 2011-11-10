@@ -59,6 +59,7 @@ void Memory::writebyte(DWORD index, BYTE x) {
         io.output(x);
     }
     if (index == IDATA || index == OSTAT || index == ISTAT) {
+        DIE("Incorrect work with I/O system");
     }
     if (checkmem(index, 1))
         memory[index] = x;
@@ -71,6 +72,7 @@ void Memory::writeword(DWORD index, WORD x) {
         io.output(x);
     }
     if (index == IDATA || index == OSTAT || index == ISTAT) {
+        DIE("Incorrect work with I/O system");
     }
     if (checkmem(index, 2)) {
         WORD* ptr = reinterpret_cast<WORD*>(&memory[index]);
@@ -81,7 +83,7 @@ void Memory::writeword(DWORD index, WORD x) {
 }
 BYTE Memory::readbyte(DWORD index) const {
     if (index == IDATA || index == ISTAT || index == OSTAT || index == ODATA) {
-        return 0;
+        DIE("Incorrect work with I/O system");
     }
     if (checkmem(index, 1)) {
         return memory[index];
@@ -99,7 +101,7 @@ WORD Memory::readword(DWORD index) const {
         return 0200;
     }
     if (index == ODATA) {
-        return 0;
+        DIE("Incorrect work with I/O system");
     }
     if (checkmem(index, 2)) {
         const WORD* ptr = reinterpret_cast<const WORD*>(&memory[index]);

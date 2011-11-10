@@ -25,6 +25,9 @@ class Memory {
 
     WORD dat[K];
     BYTE memory[MEMSIZE];
+    
+    BYTE readbyte(DWORD index) const;
+    void writebyte(DWORD index, BYTE x);
   public:
 
     Memory();
@@ -32,9 +35,7 @@ class Memory {
 
     void load(const std::string & file);
     bool checkmem(DWORD index, BYTE kol) const;
-    void writebyte(DWORD index, BYTE x);
     void writeword(DWORD index, WORD x);
-    BYTE readbyte(DWORD index) const;
     WORD readword(DWORD index) const;
     void dump();
 };
