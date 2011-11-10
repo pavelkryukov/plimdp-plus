@@ -14,7 +14,7 @@
 #include <cstdio>
 
 #define ASSERTX(C) assert(C)
-#define DIE(M) std::printf("ASSERT: %s\n", (M)); assert(0)
+#define DIE(M) std::printf("ASSERT: %s\n", (M)), assert(0)
 #define ASSERT(C, M) if (!(C)) DIE(M)
 
 #endif
