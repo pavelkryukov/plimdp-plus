@@ -15,14 +15,15 @@
 #include "./core.h"
 
 int main(int ac, char *av[]) {
-    PlimDP::Core pdp11;
     if (ac == 1) {
         std::printf("error\n");
-    } else {
-        pdp11.load(std::string(av[1]));
-        pdp11.start((ac > 2 && !std::strcmp(av[2], "-t"))
-                ? PlimDP::WRITE
-                : PlimDP::READ);
+        return 1;
     }
+    PlimDP::Core pdp11;
+    if (ac > 2 && !std::strcmp(av[2], "-t")) {
+        pdp11.setDump();
+    }
+    pdp11.load(std::string(av[1]));
+    pdp11.start();
     return 0;
 }

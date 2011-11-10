@@ -169,11 +169,15 @@ class Core {
     Pointer select_operand(BYTE idx);
     BYTE decode_m(BYTE a);
     BYTE decode_r(BYTE a);
-    void decode(WORD opcode, BYTE idx, KeyRW mode);
+    void decode(WORD opcode, BYTE idx);
     
     // Dump
     friend class CoreDump;    
     CoreDump* dump;
+    enum {
+        SILENT,
+        DUMP,
+    } mode;
   public:
     Core();
     ~Core();
@@ -181,7 +185,11 @@ class Core {
     inline void load(const std::string & file) {
         mem->load(file);
     }
-    void start(KeyRW keyRW);
+    
+    inline void setDump() {
+        mode = DUMP;
+    }
+    void start();
 };
 }
 

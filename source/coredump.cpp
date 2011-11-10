@@ -18,28 +18,28 @@ namespace PlimDP {
 CoreDump::CoreDump(const Core* core) : parent(core) {
 }
 
-void CoreDump::mn() {
+void CoreDump::mn(BYTE idx) {
     std::printf("\n%06o: ", PC - 2);
-    std::printf("%s\t", parent->instrs[parent->idx].name.c_str());
+    std::printf("%s\t", parent->instrs[idx].name.c_str());
     countfrsp = 24;
 }
-void CoreDump::reg() {
+void CoreDump::reg(WORD opcode) {
     BYTE i;
     WORD temp1, temp2;
     char frsp = ' ';
     std::printf("%*c", countfrsp, frsp);
     if (pcsmflag == 0) {
-        std::printf("[%06o]\n", parent->opcode);
+        std::printf("[%06o]\n", opcode);
     } else if (pcsmflag == 1) {
         temp1 = parent->mem->readword(oldPC - 2);
-        std::printf("[%06o %06o]\n", parent->opcode, temp1);
+        std::printf("[%06o %06o]\n", opcode, temp1);
     } else if (pcsmflag == 2) {
         temp2 = parent->mem->readword(oldPC - 2);
-        std::printf("[%06o %06o]\n", parent->opcode, temp2);
+        std::printf("[%06o %06o]\n", opcode, temp2);
     } else if (pcsmflag == 3) {
         temp1 = parent->mem->readword(oldPC - 4);
         temp2 = parent->mem->readword(oldPC - 2);
-        std::printf("[%06o %06o %06o]\n", parent->opcode, temp1, temp2);
+        std::printf("[%06o %06o %06o]\n", opcode, temp1, temp2);
     }
     pcsmflag = pcsmcnt = 0;
     

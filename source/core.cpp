@@ -914,13 +914,13 @@ BYTE Core::decode_m(BYTE a) {
 BYTE Core::decode_r(BYTE a) {
     return a & 07;
 }
-void Core::decode(WORD opcode, BYTE idx, KeyRW mode) {
+void Core::decode(WORD opcode, BYTE idx) {
     switch (instrs[idx].type) {
         case Instr::T_SSDD:
             ss = (opcode & 0007700) >> 6;
             mo = decode_m(ss);
             re = decode_r(ss);
-            if (mode == WRITE) {
+            if (mode == DUMP) {
                 dump->op();
                 dump->comma();
             }
@@ -928,7 +928,7 @@ void Core::decode(WORD opcode, BYTE idx, KeyRW mode) {
             dd = opcode & 0000077;
             mo = decode_m(dd);
             re = decode_r(dd);
-            if (mode == WRITE)
+            if (mode == DUMP)
                 dump->op();
             pD = select_operand(idx);
             break;
@@ -936,34 +936,34 @@ void Core::decode(WORD opcode, BYTE idx, KeyRW mode) {
             dd = opcode & 0000077;
             mo = decode_m(dd);
             re = decode_r(dd);
-            if (mode == WRITE)
+            if (mode == DUMP)
                 dump->op();
             pD = select_operand(idx);
             break;
         case Instr::T_XX:
             xx = opcode & 0xFF;
-            if (mode == WRITE)
+            if (mode == DUMP)
                 dump->aim();
             break;
         case Instr::T_RSS:
                 ss = opcode & 0000077;
             mo = decode_m(ss);
             re = decode_r(ss);
-            if (mode == WRITE) {
+            if (mode == DUMP) {
                 dump->op();
                 dump->comma();
             }
             pS = select_operand(idx);
             mo = 0;
             re = (opcode & 0000700) >> 6;
-            if (mode == WRITE)
+            if (mode == DUMP)
                 dump->op();
             pD = select_operand(idx);
             break;
         case Instr::T_RDD:
             mo = 0;
             re = (opcode & 0000700) >> 6;
-            if (mode == WRITE) {
+            if (mode == DUMP) {
                 dump->op();
                 dump->comma();
             }
@@ -971,14 +971,14 @@ void Core::decode(WORD opcode, BYTE idx, KeyRW mode) {
             dd = opcode & 0000077;
             mo = decode_m(dd);
             re = decode_r(dd);
-            if (mode == WRITE)
+            if (mode == DUMP)
                 dump->op();
             pD = select_operand(idx);
             break;
         case Instr::T_R:
             mo = 0;
             re = opcode & 0000007;
-            if (mode == WRITE)
+            if (mode == DUMP)
                 dump->op();
             pD = select_operand(idx);
             break;
@@ -1004,7 +1004,8 @@ Core::Core() : mem(new Memory()),
                        ss(0),
                        mo(0),
                        re(0),
-                       xx(0) {
+                       xx(0),
+                       mode(SILENT) {
     dump = new CoreDump(this);
     for (unsigned i = 0; i < sizeof(reg) / sizeof(reg[0]); ++i) {
         reg[i] = 0;
@@ -1016,7 +1017,7 @@ Core::~Core() {
     delete dump;
 }
 
-void Core::start(KeyRW keyRW) {
+void Core::start() {
     std::printf("\n---------------- running --------------\n");
     PC = 0x200;
     WORD opcode;
@@ -1025,18 +1026,18 @@ void Core::start(KeyRW keyRW) {
         PC += 2;                    //
         BYTE idx = find_instrs(opcode);        //
 
-        if (keyRW == WRITE) {
-            dump->mn();
-            decode(opcode, idx, WRITE);            
+        if (mode == DUMP) {
+            dump->mn(idx);
+            decode(opcode, idx);            
             dump->oldPC = PC;
         } else {
-            decode(opcode, idx, READ);
+            decode(opcode, idx);
         }
 
         (this->*(instrs[idx].exec))();            //
 
-        if (keyRW == WRITE)
-            dump->reg();
+        if (mode == DUMP)
+            dump->reg(opcode);
     }  while (opcode);
     std::printf("\n---------------- halted ---------------\n");
     dump->end();
