@@ -915,7 +915,6 @@ BYTE Core::decode_r(BYTE a) {
     return a & 07;
 }
 void Core::decode(KeyRW mode) {
-    last_mo = 0;
     switch (instrs[idx].type) {
         case Instr::T_SSDD:
                 ss = (opcode & 0007700) >> 6;
@@ -926,7 +925,6 @@ void Core::decode(KeyRW mode) {
                 dump->comma();
             }
             pS = select_operand();
-            last_mo = mo;
                 dd = opcode & 0000077;
             mo = decode_m(dd);
             re = decode_r(dd);
@@ -956,7 +954,6 @@ void Core::decode(KeyRW mode) {
                 dump->comma();
             }
             pS = select_operand();
-            last_mo = mo;
             mo = 0;
             re = (opcode & 0000700) >> 6;
             if (mode == WRITE)
@@ -971,7 +968,6 @@ void Core::decode(KeyRW mode) {
                 dump->comma();
             }
             pS = select_operand();
-            last_mo = mo;
                 dd = opcode & 0000077;
             mo = decode_m(dd);
             re = decode_r(dd);
@@ -1003,14 +999,13 @@ BYTE Core::find_instrs() {
 }
 
 Core::Core() : mem(new Memory()),
+               N(0), Z(0), V(0), C(0),
                        opcode(0),
                        dd(0),
                        ss(0),
                        mo(0),
                        re(0),
-                       last_mo(0),
                        xx(0),
-                       N(0), Z(0), V(0), C(0),
                        idx(0) {
     dump = new CoreDump(this);
     for (unsigned i = 0; i < sizeof(reg) / sizeof(reg[0]); ++i) {

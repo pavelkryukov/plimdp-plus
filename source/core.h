@@ -20,19 +20,21 @@
 namespace PlimDP {
 class Core {
   private:
-    friend class CoreDump;
-  
+    // Memory
     Memory* const mem;
-    CoreDump* dump;
 
+    // Registers
     WORD reg[8];
     
-    WORD opcode;
-    BYTE dd, ss, mo, re, last_mo;
-    SBYTE xx;
+    // Flags
     BYTE N, Z, V, C;
+    
+    WORD opcode;
+    BYTE dd, ss, mo, re;
+    SBYTE xx;
     BYTE idx;
     
+    // Pointers
     struct Pointer {
         DWORD index;
         enum {
@@ -65,8 +67,10 @@ class Core {
     
     Pointer pS, pD;
 
+    // Instruction set
     static Instr instrs[];
-    static size_t instrs_s;
+    static size_t instrs_s;    
+    BYTE find_instrs();
 
     void f_adcb();
     void f_adc();
@@ -163,12 +167,15 @@ class Core {
     void f_wait();
     void f_xor();
 
+    // Decoder
     Pointer select_operand();
     BYTE decode_m(BYTE a);
     BYTE decode_r(BYTE a);
     void decode(KeyRW mode);
-
-    BYTE find_instrs();
+    
+    // Dump
+    friend class CoreDump;    
+    CoreDump* dump;
   public:
     Core();
     ~Core();
