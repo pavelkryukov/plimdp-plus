@@ -40,7 +40,7 @@ BYTE Memory::checkmem(DWORD index, BYTE kol) {
     if (index < MEMSIZE) {
         if (kol == 1)
             return 1;
-        if (kol == 2 && index % 2 == 0)
+        if (kol == 2)
             return 1;
     }
     std::printf("Memory check failed");

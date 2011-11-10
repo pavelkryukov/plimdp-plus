@@ -25,8 +25,6 @@ class Core {
     SBYTE xx;
     BYTE N, Z, V, C;
     BYTE idx, countfrsp;
-    BYTE *ptr0;
-    SDWORD pD, pS;
     BYTE pcsmflag, pcsmcnt;
     
     struct Pointer {
@@ -43,6 +41,8 @@ class Core {
                 return mem->readword(p.index);
             case Pointer::REGISTER:
                 return reg[p.index];
+            default:
+                return 0;
         }
     }
     
@@ -55,9 +55,9 @@ class Core {
                 reg[p.index] = data;
                 return;
         }
-    }
-        
-                
+    }     
+    
+    Pointer pS, pD;
 
     static struct Instruction {
         std::string name;
