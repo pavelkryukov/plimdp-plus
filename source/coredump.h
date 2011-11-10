@@ -26,6 +26,7 @@ class CoreDump {
   
     WORD oldPC;
   
+    void running();
     void mn(BYTE idx);
     void reg(WORD opcode);
     void op();

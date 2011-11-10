@@ -25,11 +25,12 @@ class Core {
 
     // Registers
     WORD reg[8];
+    BYTE re;
     
     // Flags
     BYTE N, Z, V, C;
-    
-    BYTE mo, re;
+
+    BYTE mo;
     SBYTE xx;
     
     // Pointers

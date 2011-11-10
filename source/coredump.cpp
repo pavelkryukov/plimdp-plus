@@ -18,6 +18,10 @@ namespace PlimDP {
 CoreDump::CoreDump(const Core* core) : parent(core) {
 }
 
+void CoreDump::running() {
+    std::printf("\n---------------- running --------------\n");
+}
+    
 void CoreDump::mn(BYTE idx) {
     std::printf("\n%06o: ", PC - 2);
     std::printf("%s\t", parent->instrs[idx].name.c_str());
@@ -146,6 +150,7 @@ void CoreDump::aim() {
     countfrsp -= 6;
 }
 void CoreDump::end() {
+    std::printf("\n---------------- halted ---------------\n");
     std::printf("r0=%06o r2=%06o r4=%06o sp=%06o\n",
                     parent->reg[0], parent->reg[2], parent->reg[4], SP);
     std::printf("r1=%06o r3=%06o r4=%06o pc=%06o\n",

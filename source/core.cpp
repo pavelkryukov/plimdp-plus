@@ -7,10 +7,9 @@
  * Copyright 2011 (C) Pavel Kryukov (remastering)
 */
 
-#include <cstdio>
-
 #include "./core.h"
 #include "./coredump.h"
+#include "./macro.h"
 
 namespace PlimDP {
 
@@ -373,7 +372,7 @@ void Core::f_bpl() {
         PC += 2*xx;
 }
 void Core::f_bpt() {
-    std::printf("f_bpt");
+    DIE("f_bpt");
 }
 void Core::f_br() {
     PC += 2*xx;
@@ -540,19 +539,19 @@ void Core::f_div() {
     }
 }
 void Core::f_emt() {
-    std::printf("f_emt");
+    DIE("f_emt");
 }
 void Core::f_fadd() {
-    std::printf("f_add");
+    DIE("f_add");
 }
 void Core::f_fdiv() {
-    std::printf("f_fdiv");
+    DIE("f_fdiv");
 }
 void Core::f_fmul() {
-    std::printf("f_fmul");
+    DIE("f_fmul");
 }
 void Core::f_fsub() {
-    std::printf("f_fsub");
+    DIE("f_fsub");
 }
 void Core::f_halt() {
 }
@@ -579,7 +578,7 @@ void Core::f_inc() {
     this->writeword(pD, this->readword(pD) + 1);
 }
 void Core::f_iot() {
-    std::printf("f_iot");
+    DIE("f_iot");
 }
 void Core::f_jmp() {
     PC = pD.index;
@@ -591,16 +590,16 @@ void Core::f_jsr() {
     PC = pD.index;
 }
 void Core::f_mark() {
-    std::printf("f_mark");
+    DIE("f_mark");
 }
 void Core::f_mfpd() {
-    std::printf("f_mfpd");
+    DIE("f_mfpd");
 }
 void Core::f_mfpi() {
-    std::printf("f_mfpi");
+    DIE("f_mfpi");
 }
 void Core::f_mfps() {
-    std::printf("f_mfps");
+    DIE("f_mfps");
 }
 void Core::f_movb() {
     BYTE temp;
@@ -623,13 +622,13 @@ void Core::f_mov() {
     this->writeword(pD, this->readword(pS));
 }
 void Core::f_mtpd() {
-    std::printf("f_mtpd");
+    DIE("f_mtpd");
 }
 void Core::f_mtpi() {
-    std::printf("f_mtpi");
+    DIE("f_mtpi");
 }
 void Core::f_mtps() {
-    std::printf("f_mtps");
+    DIE("f_mtps");
 }
 void Core::f_mul() {
     SDWORD result;
@@ -670,10 +669,10 @@ void Core::f_neg() {
     this->writeword(pD, ~this->readword(pD) + 1);
 }
 void Core::f_nop() {
-    std::printf("f_nop");
+    DIE("f_nop");
 }
 void Core::f_reset() {
-    std::printf("f_reset");
+    DIE("f_reset");
 }
 void Core::f_rolb() {
     BYTE temp;
@@ -730,7 +729,7 @@ void Core::f_ror() {
     this->writeword(pD, result);
 }
 void Core::f_rti() {
-    std::printf("f_rti");
+    DIE("f_rti");
 }
 void Core::f_rts() {
     PC = this->readword(pD);
@@ -738,7 +737,7 @@ void Core::f_rts() {
     SP += 2;
 }
 void Core::f_rtt() {
-    std::printf("f_rtt");
+    DIE("f_rtt");
 }
 void Core::f_sbcb() {
     BYTE result;
@@ -782,10 +781,10 @@ void Core::f_sez() {
     Z = 1;
 }
 void Core::f_sob() {
-    std::printf("f_sob");
+    DIE("f_sob");
 }
 void Core::f_spl() {
-    std::printf("f_spl");
+    DIE("f_spl");
 }
 void Core::f_sub() {
     DWORD temp;
@@ -812,10 +811,10 @@ void Core::f_swab() {
     this->writeword(pD, (this->readword(pD) >> 8) | ((WORD)temp << 8));
 }
 void Core::f_sxt() {
-    std::printf("f_sxt");
+    DIE("f_sxt");
 }
 void Core::f_trap() {
-    std::printf("f_trap");
+    DIE("f_trap");
 }
 void Core::f_tstb() {
     BYTE temp;
@@ -833,10 +832,10 @@ void Core::f_tst() {
     C = 0;
 }
 void Core::f_wait() {
-    std::printf("f_wait");
+    DIE("f_wait");
 }
 void Core::f_xor() {
-    std::printf("f_xor");
+    DIE("f_xor");
 }
 
 /*DECODER***************************************************************/
@@ -986,16 +985,15 @@ BYTE Core::find_instrs(WORD opcode) {
     for (i = 0; i < instrs_s; i++)
         if ((opcode & instrs[i].mask) == instrs[i].code)
             return i;
-    std::printf("Such function doesn't exist");
+    DIE("Such function doesn't exist");
     return 0;
 }
 
 Core::Core() : mem(new Memory()),
+               re(0),
                N(0), Z(0), V(0), C(0),
-                       mo(0),
-                       re(0),
-                       xx(0),
-                       dumpMode(false) {
+               mo(0), xx(0),
+               dumpMode(false) {
     dump = new CoreDump(this);
     for (unsigned i = 0; i < sizeof(reg) / sizeof(reg[0]); ++i) {
         reg[i] = 0;
@@ -1008,7 +1006,7 @@ Core::~Core() {
 }
 
 void Core::start() {
-    std::printf("\n---------------- running --------------\n");
+    dump->running();
     PC = 0x200;
     WORD opcode;
     do {
@@ -1030,7 +1028,6 @@ void Core::start() {
         DUMP( dump->reg(opcode) );
         
     }  while (opcode);
-    std::printf("\n---------------- halted ---------------\n");
     dump->end();
 }
 

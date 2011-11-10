@@ -10,6 +10,7 @@
 #include <cstdio>
 
 #include "./memory.h"
+#include "./macro.h"
 
 #define ISTAT 0177560
 #define IDATA 0177562
@@ -49,7 +50,7 @@ bool Memory::checkmem(DWORD index, BYTE kol) const {
         if (kol == 2)
             return true;
     }
-    std::printf("Memory check failed");
+    DIE("Memory check failed");
     return false;
 }
 
@@ -62,7 +63,7 @@ void Memory::writebyte(DWORD index, BYTE x) {
     if (checkmem(index, 1))
         memory[index] = x;
     else
-        std::printf("Error: writing byte outside the memory");
+        DIE("Error: writing byte outside the memory");
 }
 
 void Memory::writeword(DWORD index, WORD x) {
@@ -75,7 +76,7 @@ void Memory::writeword(DWORD index, WORD x) {
         WORD* ptr = reinterpret_cast<WORD*>(&memory[index]);
         *ptr = x;
     } else {
-        std::printf("Error: writing word outside the memory or bad address");
+        DIE("Error: writing word outside the memory or bad address");
     }
 }
 BYTE Memory::readbyte(DWORD index) const {
@@ -85,7 +86,7 @@ BYTE Memory::readbyte(DWORD index) const {
     if (checkmem(index, 1)) {
         return memory[index];
     } else {
-        std::printf("Error: reading byte outside the memory");
+        DIE("Error: reading byte outside the memory");
         return 0;
     }
 }
@@ -104,14 +105,14 @@ WORD Memory::readword(DWORD index) const {
         const WORD* ptr = reinterpret_cast<const WORD*>(&memory[index]);
         return *ptr;
     } else {
-        std::printf("Error: reading word outside the memory or bad address");
+        DIE("Error: reading word outside the memory or bad address");
         return 0;
     }
 }
 
 void Memory::dump() {
     for (unsigned i = 0; i < MEMSIZE; ++i) {
-        std::printf("%c\n", memory[i]);
+        std::printf("%ho\n ", memory[i]);
     }
 }
 }
