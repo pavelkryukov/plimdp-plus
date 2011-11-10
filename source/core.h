@@ -28,6 +28,36 @@ class Core {
     BYTE *ptr0;
     SDWORD pD, pS;
     BYTE pcsmflag, pcsmcnt;
+    
+    struct Pointer {
+        DWORD index;
+        enum {
+            MEMORY,
+            REGISTER,
+        } type;
+    };
+    
+    inline WORD readword(Pointer p) {
+        switch (p.type) {
+            case Pointer::MEMORY:
+                return mem->readword(p.index);
+            case Pointer::REGISTER:
+                return reg[p.index];
+        }
+    }
+    
+    inline void writeword(Pointer p, WORD data) {
+        switch (p.type) {
+            case Pointer::MEMORY:
+                mem->writeword(p.index, data);
+                return;
+            case Pointer::REGISTER:
+                reg[p.index] = data;
+                return;
+        }
+    }
+        
+                
 
     static struct Instruction {
         std::string name;
