@@ -32,6 +32,7 @@ class Memory {
     void writeword(DWORD index, WORD x);
     BYTE readbyte(DWORD index);
     WORD readword(DWORD index);
+    void dump();
 };
 }
 

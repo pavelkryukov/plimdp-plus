@@ -80,4 +80,10 @@ WORD Memory::readword(DWORD index) {
         return 0;
     }
 }
+
+void Memory::dump() {
+    for (unsigned i = 0; i < MEMSIZE; ++i) {
+        std::printf("%c\n", memory[i]);
+    }
+}
 }
