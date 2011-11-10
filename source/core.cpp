@@ -914,10 +914,10 @@ BYTE Core::decode_m(BYTE a) {
 BYTE Core::decode_r(BYTE a) {
     return a & 07;
 }
-void Core::decode(KeyRW mode) {
+void Core::decode(WORD opcode, KeyRW mode) {
     switch (instrs[idx].type) {
         case Instr::T_SSDD:
-                ss = (opcode & 0007700) >> 6;
+            ss = (opcode & 0007700) >> 6;
             mo = decode_m(ss);
             re = decode_r(ss);
             if (mode == WRITE) {
@@ -925,7 +925,7 @@ void Core::decode(KeyRW mode) {
                 dump->comma();
             }
             pS = select_operand();
-                dd = opcode & 0000077;
+            dd = opcode & 0000077;
             mo = decode_m(dd);
             re = decode_r(dd);
             if (mode == WRITE)
@@ -933,7 +933,7 @@ void Core::decode(KeyRW mode) {
             pD = select_operand();
             break;
         case Instr::T_DD:
-                dd = opcode & 0000077;
+            dd = opcode & 0000077;
             mo = decode_m(dd);
             re = decode_r(dd);
             if (mode == WRITE)
@@ -941,7 +941,7 @@ void Core::decode(KeyRW mode) {
             pD = select_operand();
             break;
         case Instr::T_XX:
-                xx = opcode & 0xFF;
+            xx = opcode & 0xFF;
             if (mode == WRITE)
                 dump->aim();
             break;
@@ -968,7 +968,7 @@ void Core::decode(KeyRW mode) {
                 dump->comma();
             }
             pS = select_operand();
-                dd = opcode & 0000077;
+            dd = opcode & 0000077;
             mo = decode_m(dd);
             re = decode_r(dd);
             if (mode == WRITE)
@@ -989,7 +989,7 @@ void Core::decode(KeyRW mode) {
     }
 }
 /* MAIN_FUNCTIONS********************************************************/
-BYTE Core::find_instrs() {
+BYTE Core::find_instrs(WORD opcode) {
     BYTE i;
     for (i = 0; i < instrs_s; i++)
         if ((opcode & instrs[i].mask) == instrs[i].code)
@@ -1000,7 +1000,6 @@ BYTE Core::find_instrs() {
 
 Core::Core() : mem(new Memory()),
                N(0), Z(0), V(0), C(0),
-                       opcode(0),
                        dd(0),
                        ss(0),
                        mo(0),
@@ -1021,17 +1020,18 @@ Core::~Core() {
 void Core::start(KeyRW keyRW) {
     std::printf("\n---------------- running --------------\n");
     PC = 0x200;
+    WORD opcode;
     do {
         opcode = mem->readword(PC);        //
         PC += 2;                    //
-        idx = find_instrs();        //
+        idx = find_instrs(opcode);        //
 
         if (keyRW == WRITE) {
             dump->mn();
-            decode(WRITE);            
+            decode(opcode, WRITE);            
             dump->oldPC = PC;
         } else {
-            decode(READ);
+            decode(opcode, READ);
         }
 
         (this->*(instrs[idx].exec))();            //

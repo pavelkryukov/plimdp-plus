@@ -29,7 +29,6 @@ class Core {
     // Flags
     BYTE N, Z, V, C;
     
-    WORD opcode;
     BYTE dd, ss, mo, re;
     SBYTE xx;
     BYTE idx;
@@ -70,7 +69,7 @@ class Core {
     // Instruction set
     static Instr instrs[];
     static size_t instrs_s;    
-    BYTE find_instrs();
+    BYTE find_instrs(WORD opcode);
 
     void f_adcb();
     void f_adc();
@@ -171,7 +170,7 @@ class Core {
     Pointer select_operand();
     BYTE decode_m(BYTE a);
     BYTE decode_r(BYTE a);
-    void decode(KeyRW mode);
+    void decode(WORD opcode, KeyRW mode);
     
     // Dump
     friend class CoreDump;    
