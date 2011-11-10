@@ -1,5 +1,10 @@
-cxx:=G++
-CXXFLAGS:= -c -O3 -Wall
+$(CXX):=g++
+
+ifeq ($(DEBUG), yes)
+    CXXFLAGS:= -Wall -O0 -g -c
+else
+    CXXFLAGS:= -Wall -O3 -c
+endif
 
 SRC_DIR:=source
 BIN_DIR:=bin
