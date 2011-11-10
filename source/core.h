@@ -15,6 +15,7 @@
 #include "./types.h"
 #include "./memory.h"
 #include "./coredump.h"
+#include "./instr.h"
 
 namespace PlimDP {
 class Core {
@@ -24,7 +25,9 @@ class Core {
     Memory* const mem;
     CoreDump* dump;
 
-    WORD opcode, reg[8], oldPC;
+    WORD reg[8];
+    
+    WORD opcode;
     BYTE dd, ss, mo, re, last_mo;
     SBYTE xx;
     BYTE N, Z, V, C;
@@ -62,14 +65,7 @@ class Core {
     
     Pointer pS, pD;
 
-    static struct Instruction {
-        std::string name;
-        WORD code;
-        WORD mask;
-        InstrType type;
-        void (Core::*exec)();
-        BYTE size;
-    } instrs[];
+    static Instr instrs[];
     static size_t instrs_s;
 
     void f_adcb();

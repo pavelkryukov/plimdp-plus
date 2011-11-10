@@ -9,8 +9,6 @@
 
 #include <cstdio>
 
-#include <string>
-
 #include "./memory.h"
 
 #define ISTAT 0177560

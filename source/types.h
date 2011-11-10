@@ -23,21 +23,6 @@ enum KeyRW {
     READ,
     WRITE,
 };
-
-enum InstrType {
-    T_DD,
-    T_SSDD,
-    T_RSS,
-    T_XX,
-    T_NONE,
-    T_TT,
-    T_R,
-    T_RDD,
-    T_NN,
-    T_SS,
-    T_RNN,
-    T_N,
-};
 }
 
 #endif

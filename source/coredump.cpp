@@ -31,14 +31,14 @@ void CoreDump::reg() {
     if (pcsmflag == 0) {
         std::printf("[%06o]\n", parent->opcode);
     } else if (pcsmflag == 1) {
-        temp1 = parent->mem->readword(parent->oldPC - 2);
+        temp1 = parent->mem->readword(oldPC - 2);
         std::printf("[%06o %06o]\n", parent->opcode, temp1);
     } else if (pcsmflag == 2) {
-        temp2 = parent->mem->readword(parent->oldPC - 2);
+        temp2 = parent->mem->readword(oldPC - 2);
         std::printf("[%06o %06o]\n", parent->opcode, temp2);
     } else if (pcsmflag == 3) {
-        temp1 = parent->mem->readword(parent->oldPC - 4);
-        temp2 = parent->mem->readword(parent->oldPC - 2);
+        temp1 = parent->mem->readword(oldPC - 4);
+        temp2 = parent->mem->readword(oldPC - 2);
         std::printf("[%06o %06o %06o]\n", parent->opcode, temp1, temp2);
     }
     pcsmflag = pcsmcnt = 0;

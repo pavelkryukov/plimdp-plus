@@ -10,6 +10,8 @@
 #ifndef COREDUMP_H
 #define COREDUMP_H
 
+#include "./types.h"
+
 namespace PlimDP {
 class Core;
 
@@ -21,6 +23,8 @@ class CoreDump {
     const Core* const parent;
   public:
     explicit CoreDump(const Core* core);
+  
+    WORD oldPC;
   
     void mn();
     void reg();
