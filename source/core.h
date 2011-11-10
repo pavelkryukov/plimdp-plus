@@ -29,7 +29,7 @@ class Core {
     // Flags
     BYTE N, Z, V, C;
     
-    BYTE dd, ss, mo, re;
+    BYTE ss, mo, re;
     SBYTE xx;
     
     // Pointers

@@ -915,6 +915,7 @@ BYTE Core::decode_r(BYTE a) {
     return a & 07;
 }
 void Core::decode(WORD opcode, BYTE idx) {
+    BYTE dd;
     switch (instrs[idx].type) {
         case Instr::T_SSDD:
             ss = (opcode & 0007700) >> 6;
@@ -1000,7 +1001,6 @@ BYTE Core::find_instrs(WORD opcode) {
 
 Core::Core() : mem(new Memory()),
                N(0), Z(0), V(0), C(0),
-                       dd(0),
                        ss(0),
                        mo(0),
                        re(0),
