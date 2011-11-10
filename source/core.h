@@ -1,6 +1,6 @@
 /*
  * core.h
- * 
+ *
  * PlimDP+ core header
  *
  * Copyright 2009 (C) Boris Belousov
@@ -26,13 +26,13 @@ class Core {
     // Registers
     WORD reg[8];
     BYTE re;
-    
+
     // Flags
     BYTE N, Z, V, C;
 
     BYTE mo;
     SBYTE xx;
-    
+
     // Pointers
     struct Pointer {
         DWORD index;
@@ -41,7 +41,7 @@ class Core {
             REGISTER,
         } type;
     };
-    
+
     inline WORD readword(Pointer p) {
         switch (p.type) {
             case Pointer::MEMORY:
@@ -52,7 +52,7 @@ class Core {
                 return 0;
         }
     }
-    
+
     inline void writeword(Pointer p, WORD data) {
         switch (p.type) {
             case Pointer::MEMORY:
@@ -62,13 +62,13 @@ class Core {
                 reg[p.index] = data;
                 return;
         }
-    }     
-    
+    }
+
     Pointer pS, pD;
 
     // Instruction set
     static Instr instrs[];
-    static size_t instrs_s;    
+    static size_t instrs_s;
     BYTE find_instrs(WORD opcode);
 
     void f_adcb();
@@ -171,9 +171,9 @@ class Core {
     BYTE decode_m(BYTE a);
     BYTE decode_r(BYTE a);
     void decode(WORD opcode, BYTE idx);
-    
+
     // Dump
-    friend class CoreDump;    
+    friend class CoreDump;
     CoreDump* dump;
     bool dumpMode;
   public:
@@ -183,7 +183,7 @@ class Core {
     inline void load(const std::string & file) {
         mem->load(file);
     }
-    
+
     inline void setDump() {
         dumpMode = true;
     }

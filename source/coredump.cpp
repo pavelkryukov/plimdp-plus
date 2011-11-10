@@ -1,6 +1,6 @@
 /*
  * coredump.cpp
- * 
+ *
  * PlimDP+ core dump
  *
  * Copyright 2009 (C) Boris Belousov
@@ -21,7 +21,7 @@ CoreDump::CoreDump(const Core* core) : parent(core) {
 void CoreDump::running() {
     std::printf("\n---------------- running --------------\n");
 }
-    
+
 void CoreDump::mn(BYTE idx) {
     std::printf("\n%06o: ", PC - 2);
     std::printf("%s\t", parent->instrs[idx].name.c_str());
@@ -46,12 +46,12 @@ void CoreDump::reg(WORD opcode) {
         std::printf("[%06o %06o %06o]\n", opcode, temp1, temp2);
     }
     pcsmflag = pcsmcnt = 0;
-    
+
     std::printf(parent->N == 1 ? "N" : "-");
     std::printf(parent->Z == 1 ? "Z" : "-");
     std::printf(parent->V == 1 ? "V" : "-");
     std::printf(parent->C == 1 ? "C" : "-");
-                
+
     std::printf(" ");
     for (i = 0; i < 8; i++)
         std::printf("%hd:%06o ", i, parent->reg[i]);

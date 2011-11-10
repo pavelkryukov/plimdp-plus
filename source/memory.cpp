@@ -9,6 +9,8 @@
 
 #include <cstdio>
 
+#include <string>
+
 #include "./memory.h"
 #include "./macro.h"
 

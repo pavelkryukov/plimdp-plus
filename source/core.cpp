@@ -479,7 +479,8 @@ void Core::f_dec() {
 
     N = (result >> 15) & 1;
     Z = result == 0 ? 1 : 0;
-    V = ((SWORD) this->readword(pD) < 0) && ((SWORD) this->readword(pD) < 0) != ((SWORD) result < 0);
+    V = ((SWORD) this->readword(pD) < 0) &&
+        ((SWORD) this->readword(pD) < 0) != ((SWORD) result < 0);
 
     this->writeword(pD, this->readword(pD) - 1);
 }
@@ -573,7 +574,8 @@ void Core::f_inc() {
 
     N = (result >> 15) & 1;
     Z = result == 0 ? 1 : 0;
-    V = ((SWORD) this->readword(pD) > 0) && ((SWORD) this->readword(pD) < 0) != ((SWORD) result < 0);
+    V = ((SWORD) this->readword(pD) > 0) &&
+        ((SWORD) this->readword(pD) < 0) != ((SWORD) result < 0);
 
     this->writeword(pD, this->readword(pD) + 1);
 }
@@ -610,7 +612,7 @@ void Core::f_movb() {
     V = 0;
 
     if (mo)
-        this->writeword(pD, (this->readword(pD) & 0xff00) | (this->readword(pS) & 0xff));
+        this->writeword(pD, (this->readword(pD) & 0xff00) | temp);
     else
         this->writeword(pD, (SBYTE) temp);
 }
@@ -855,7 +857,7 @@ Core::Pointer Core::select_operand(BYTE idx) {
             break;
         case 2:
             if (mem->checkmem(reg[re], 1)) {
-                pointer.index = reg[re];                
+                pointer.index = reg[re];
                 pointer.type = Pointer::MEMORY;
             }
             if (instrs[idx].size == 1 && re < 6)
@@ -866,7 +868,7 @@ Core::Pointer Core::select_operand(BYTE idx) {
         case 3:
             if (mem->checkmem(reg[re], 2) &&
                 mem->checkmem(mem->readword(reg[re]), 1)) {
-                pointer.index = mem->readword(reg[re]); 
+                pointer.index = mem->readword(reg[re]);
                 pointer.type = Pointer::MEMORY;
             }
             reg[re] += 2;
@@ -877,7 +879,7 @@ Core::Pointer Core::select_operand(BYTE idx) {
             else if (instrs[idx].size == 2 || re >= 6)
                 reg[re] -= 2;
             if (mem->checkmem(reg[re], 1)) {
-                pointer.index = reg[re];                
+                pointer.index = reg[re];
                 pointer.type = Pointer::MEMORY;
             }
             break;
@@ -885,7 +887,7 @@ Core::Pointer Core::select_operand(BYTE idx) {
             reg[re] -= 2;
             if (mem->checkmem(reg[re], 2) &&
                 mem->checkmem(mem->readword(reg[re]), 1)) {
-                pointer.index = mem->readword(reg[re]);                
+                pointer.index = mem->readword(reg[re]);
                 pointer.type = Pointer::MEMORY;
             }
             break;
@@ -893,7 +895,7 @@ Core::Pointer Core::select_operand(BYTE idx) {
             offset = mem->readword(PC);
             PC += 2;
             if (mem->checkmem((WORD)(reg[re] + offset), 1)) {
-                pointer.index = (WORD)(reg[re] + offset);                
+                pointer.index = (WORD)(reg[re] + offset);
                 pointer.type = Pointer::MEMORY;
             }
             break;
@@ -902,7 +904,7 @@ Core::Pointer Core::select_operand(BYTE idx) {
             PC += 2;
             if (mem->checkmem((WORD)(reg[re] + offset), 2) &&
                 mem->checkmem(mem->readword((WORD)(reg[re] + offset)), 1)) {
-                pointer.index = mem->readword((WORD)(reg[re] + offset));                
+                pointer.index = mem->readword((WORD)(reg[re] + offset));
                 pointer.type = Pointer::MEMORY;
             }
             break;
@@ -923,48 +925,48 @@ void Core::decode(WORD opcode, BYTE idx) {
             ss = (opcode & 0007700) >> 6;
             mo = decode_m(ss);
             re = decode_r(ss);
-            DUMP( dump->op() );
-            DUMP( dump->comma() );
+            DUMP( dump->op(); )
+            DUMP( dump->comma(); )
             pS = select_operand(idx);
             dd = opcode & 0000077;
             mo = decode_m(dd);
             re = decode_r(dd);
-            DUMP( dump->op() );
+            DUMP( dump->op(); )
             pD = select_operand(idx);
             break;
         case Instr::T_DD:
             dd = opcode & 0000077;
             mo = decode_m(dd);
             re = decode_r(dd);
-            DUMP( dump->op() );
+            DUMP( dump->op(); )
             pD = select_operand(idx);
             break;
         case Instr::T_XX:
-            xx = opcode & 0xFF;            
-            DUMP( dump->aim() );
+            xx = opcode & 0xFF;
+            DUMP( dump->aim(); )
             break;
         case Instr::T_RSS:
             ss = opcode & 0000077;
             mo = decode_m(ss);
             re = decode_r(ss);
-            DUMP( dump->op() );
-            DUMP( dump->comma() );
+            DUMP( dump->op(); )
+            DUMP( dump->comma(); )
             pS = select_operand(idx);
             mo = 0;
             re = (opcode & 0000700) >> 6;
-            DUMP( dump->op() );
+            DUMP( dump->op(); )
             pD = select_operand(idx);
             break;
         case Instr::T_RDD:
             mo = 0;
             re = (opcode & 0000700) >> 6;
-            DUMP( dump->op() );
-            DUMP( dump->comma() );
+            DUMP( dump->op(); )
+            DUMP( dump->comma(); )
             pS = select_operand(idx);
             dd = opcode & 0000077;
             mo = decode_m(dd);
             re = decode_r(dd);
-            DUMP( dump->op() );
+            DUMP( dump->op(); )
             pD = select_operand(idx);
             break;
         case Instr::T_R:
@@ -1015,20 +1017,18 @@ void Core::start() {
         PC += 2;                    //
         BYTE idx = find_instrs(opcode);        //
 
-        DUMP( dump->mn(idx) );
-        
+        DUMP( dump->mn(idx); )
+
         // Decode
-        decode(opcode, idx); 
-        
-        DUMP( dump->oldPC = PC );
-        
+        decode(opcode, idx);
+
+        DUMP( dump->oldPC = PC; )
+
         // Execute
         (this->*(instrs[idx].exec))();            //
 
-        DUMP( dump->reg(opcode) );
-        
+        DUMP( dump->reg(opcode); )
     }  while (opcode);
     dump->end();
 }
-
 }  // namespace PlimDP

@@ -25,7 +25,7 @@ class Memory {
 
     WORD dat[K];
     BYTE memory[MEMSIZE];
-    
+
     BYTE readbyte(DWORD index) const;
     void writebyte(DWORD index, BYTE x);
   public:

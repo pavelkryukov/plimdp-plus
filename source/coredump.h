@@ -1,6 +1,6 @@
 /*
  * coredump.h
- * 
+ *
  * PlimDP+ core dump
  *
  * Copyright 2009 (C) Boris Belousov
@@ -23,9 +23,9 @@ class CoreDump {
     const Core* const parent;
   public:
     explicit CoreDump(const Core* core);
-  
+
     WORD oldPC;
-  
+
     void running();
     void mn(BYTE idx);
     void reg(WORD opcode);

@@ -20,7 +20,6 @@ class IO {
     inline BYTE input() const {
         return getchar();
     }
-    
     inline void output(BYTE x) const {
         std::printf("%c", x);
     }
