@@ -17,11 +17,11 @@
 namespace PlimDP {
 class IO {
   public:
-    inline BYTE input() {
+    inline BYTE input() const {
         return getchar();
     }
     
-    inline void output(BYTE x) {
+    inline void output(BYTE x) const {
         std::printf("%c", x);
     }
 };

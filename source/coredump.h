@@ -15,7 +15,8 @@ class Core;
 
 class CoreDump {
   private:
-    char pcsmflag, pcsmcnt;
+    char pcsmflag;
+    char pcsmcnt;
     char countfrsp;
     const Core* const parent;
   public:

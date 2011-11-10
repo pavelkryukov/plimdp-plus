@@ -20,14 +20,13 @@
 
 namespace PlimDP {
 
-Memory::Memory() : io(new IO()) {
+Memory::Memory() {
     for (unsigned i = 0; i < MEMSIZE; ++i) {
         memory[i] = 0;
     }
 }
 
 Memory::~Memory() {
-    delete io;
 }
 
 void Memory::load(const std::string & file) {
@@ -45,20 +44,20 @@ void Memory::load(const std::string & file) {
     std::fclose(fd);
 }
 
-BYTE Memory::checkmem(DWORD index, BYTE kol) {
+bool Memory::checkmem(DWORD index, BYTE kol) const {
     if (index < MEMSIZE) {
         if (kol == 1)
-            return 1;
+            return true;
         if (kol == 2)
-            return 1;
+            return true;
     }
     std::printf("Memory check failed");
-    return 0;
+    return false;
 }
 
 void Memory::writebyte(DWORD index, BYTE x) {
     if (index == ODATA) {
-        io->output(x);
+        io.output(x);
     }
     if (index == IDATA || index == OSTAT || index == ISTAT) {
     }
@@ -70,7 +69,7 @@ void Memory::writebyte(DWORD index, BYTE x) {
 
 void Memory::writeword(DWORD index, WORD x) {
     if (index == ODATA) {
-        io->output(x);
+        io.output(x);
     }
     if (index == IDATA || index == OSTAT || index == ISTAT) {
     }
@@ -81,7 +80,7 @@ void Memory::writeword(DWORD index, WORD x) {
         std::printf("Error: writing word outside the memory or bad address");
     }
 }
-BYTE Memory::readbyte(DWORD index) {
+BYTE Memory::readbyte(DWORD index) const {
     if (index == IDATA || index == ISTAT || index == OSTAT || index == ODATA) {
         return 0;
     }
@@ -93,9 +92,9 @@ BYTE Memory::readbyte(DWORD index) {
     }
 }
 
-WORD Memory::readword(DWORD index) {
+WORD Memory::readword(DWORD index) const {
     if (index == IDATA) {
-        return io->input();
+        return io.input();
     }
     if (index == ISTAT || index == OSTAT) {
         return 0200;
@@ -104,7 +103,7 @@ WORD Memory::readword(DWORD index) {
         return 0;
     }
     if (checkmem(index, 2)) {
-        WORD* ptr = reinterpret_cast<WORD*>(&memory[index]);
+        const WORD* ptr = reinterpret_cast<const WORD*>(&memory[index]);
         return *ptr;
     } else {
         std::printf("Error: reading word outside the memory or bad address");
