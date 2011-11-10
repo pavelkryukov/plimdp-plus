@@ -1,10 +1,17 @@
 $(CXX):=g++
 
-ifeq ($(DEBUG), yes)
+ifeq ($(DEBUG), 1)
     CXXFLAGS:= -Wall -O0 -g -c
 else
     CXXFLAGS:= -Wall -O3 -c
 endif
+
+ifeq ($(TRACE), 1)
+    CXXFLAGS:= $(CXXFLAGS) -DENABLE_TRACE=1
+else
+    CXXFLAGS:= $(CXXFLAGS) -DENABLE_TRACE=0
+endif
+
 
 SRC_DIR:=source
 BIN_DIR:=bin

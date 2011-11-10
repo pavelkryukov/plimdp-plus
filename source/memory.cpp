@@ -103,7 +103,7 @@ WORD Memory::readword(DWORD index) const {
         return 0200;
     }
     if (index == ODATA) {
-        DIE("Incorrect work with I/O system");
+        return 0;
     }
     if (checkmem(index, 2)) {
         const WORD* ptr = reinterpret_cast<const WORD*>(&memory[index]);

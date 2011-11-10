@@ -175,7 +175,6 @@ class Core {
     // Dump
     friend class CoreDump;
     CoreDump* dump;
-    bool dumpMode;
   public:
     Core();
     ~Core();
@@ -184,9 +183,6 @@ class Core {
         mem->load(file);
     }
 
-    inline void setDump() {
-        dumpMode = true;
-    }
     void start();
 };
 }

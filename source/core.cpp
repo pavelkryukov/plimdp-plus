@@ -16,7 +16,11 @@ namespace PlimDP {
 #define PC (reg[7])
 #define SP (reg[6])
 
-#define DUMP(OPERATIONS) if (dumpMode) OPERATIONS
+#if ENABLE_TRACE
+#define DUMP(OPERATIONS) OPERATIONS
+#else
+#define DUMP(OPERATIONS)
+#endif
 
 Instr Core::instrs[] = {
     {"adcb", 0105500, 0177700, Instr::T_DD,   &Core::f_adcb, 1},
@@ -994,8 +998,7 @@ BYTE Core::find_instrs(WORD opcode) {
 Core::Core() : mem(new Memory()),
                re(0),
                N(0), Z(0), V(0), C(0),
-               mo(0), xx(0),
-               dumpMode(false) {
+               mo(0), xx(0) {
     dump = new CoreDump(this);
     for (unsigned i = 0; i < sizeof(reg) / sizeof(reg[0]); ++i) {
         reg[i] = 0;
