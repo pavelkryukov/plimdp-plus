@@ -125,7 +125,7 @@ size_t Core::instrs_s = sizeof(instrs) / sizeof(instrs[0]);
 void Core::f_adcb() {
     BYTE result;
     BYTE temp;
-    temp = (BYTE) (*((WORD*)ptrD) & 0xff);
+    temp = (BYTE) (*((WORD*)(ptr0 + pD)) & 0xff);
     result = temp + C;
 
     N = (result >> 7) & 1;
@@ -133,94 +133,94 @@ void Core::f_adcb() {
     V = ((SBYTE) temp > 0) && ((SBYTE) result < 0);
     C = (((WORD) temp + C) >> 8) & 1;
 
-    *((WORD*)ptrD) = (*((WORD*)ptrD) & 0xff00) | (WORD) result;
+    *((WORD*)(ptr0 + pD)) = (*((WORD*)(ptr0 + pD)) & 0xff00) | (WORD) result;
 }
 void Core::f_adc() {
     DWORD temp;
     WORD result;
-    temp = (DWORD) *((WORD*)ptrD) + C;
+    temp = (DWORD) *((WORD*)(ptr0 + pD)) + C;
     result = (WORD) temp;
 
     N = (temp >> 15) & 1;
     Z = result == 0 ? 1 : 0;
-    V = ((SWORD) *((WORD*)ptrD) > 0) && ((SWORD) result < 0);
+    V = ((SWORD) *((WORD*)(ptr0 + pD)) > 0) && ((SWORD) result < 0);
     C = (temp >> 16) & 1;
 
-    *((WORD*)ptrD) = (WORD) temp;
+    *((WORD*)(ptr0 + pD)) = (WORD) temp;
 }
 void Core::f_add() {
     DWORD temp;
     WORD result;
-    temp = (DWORD) *((WORD*)ptrD) + (DWORD) *((WORD*)ptrS);
+    temp = (DWORD) *((WORD*)(ptr0 + pD)) + (DWORD) *((WORD*)(ptr0 + pS));
     result = (WORD) temp;
 
     N = (temp >> 15) & 1;
     Z = result == 0 ? 1 : 0;
-    V = ((SWORD) *((WORD*)ptrS) < 0) == ((SWORD) *((WORD*)ptrD) < 0) &&
-        ((SWORD) *((WORD*)ptrS) < 0) != ((SWORD) result < 0);
+    V = ((SWORD) *((WORD*)(ptr0 + pS)) < 0) == ((SWORD) *((WORD*)(ptr0 + pD)) < 0) &&
+        ((SWORD) *((WORD*)(ptr0 + pS)) < 0) != ((SWORD) result < 0);
     C = (temp >> 16) & 1;
 
-    *((WORD*)ptrD) = (WORD) temp;
+    *((WORD*)(ptr0 + pD)) = (WORD) temp;
 }
 void Core::f_ash() {
     WORD temp;
-    temp = (SWORD) *((WORD*)ptrS) > 0
-            ? *((WORD*)ptrD) << *((WORD*)ptrS)
-            : (SWORD) *((WORD*)ptrD) >> (-(SWORD) *((WORD*)ptrS));
+    temp = (SWORD) *((WORD*)(ptr0 + pS)) > 0
+            ? *((WORD*)(ptr0 + pD)) << *((WORD*)(ptr0 + pS))
+            : (SWORD) *((WORD*)(ptr0 + pD)) >> (-(SWORD) *((WORD*)(ptr0 + pS)));
 
     N = (temp >> 15) & 1;
     Z = temp == 0 ? 1 : 0;
-    V = ((SWORD) *((WORD*)ptrD) < 0) != ((SWORD) temp < 0);
-    C = (SWORD) *((WORD*)ptrS) > 0
-        ? (*((WORD*)ptrD) >> (16 - *((WORD*)ptrS))) & 1
-        : (SWORD) *((WORD*)ptrS) < 0
-            ? (*((WORD*)ptrD) >> ((-(SWORD)*((WORD*)ptrS)) - 1)) & 1
+    V = ((SWORD) *((WORD*)(ptr0 + pD)) < 0) != ((SWORD) temp < 0);
+    C = (SWORD) *((WORD*)(ptr0 + pS)) > 0
+        ? (*((WORD*)(ptr0 + pD)) >> (16 - *((WORD*)(ptr0 + pS)))) & 1
+        : (SWORD) *((WORD*)(ptr0 + pS)) < 0
+            ? (*((WORD*)(ptr0 + pD)) >> ((-(SWORD)*((WORD*)(ptr0 + pS))) - 1)) & 1
             : 0;
 
-    *((WORD*)ptrD) = temp;
+    *((WORD*)(ptr0 + pD)) = temp;
 }
 void Core::f_ashc() {
     DWORD temp;
     DWORD result;
     WORD temp1;
     if (re % 2) {
-        temp1 = (SWORD) *((WORD*)ptrS) > 0
-            ? *((WORD*)ptrD) << *((WORD*)ptrS)
-            : (SWORD) *((WORD*)ptrD) >> (-(SWORD) *((WORD*)ptrS));
+        temp1 = (SWORD) *((WORD*)(ptr0 + pS)) > 0
+            ? *((WORD*)(ptr0 + pD)) << *((WORD*)(ptr0 + pS))
+            : (SWORD) *((WORD*)(ptr0 + pD)) >> (-(SWORD) *((WORD*)(ptr0 + pS)));
 
         N = (temp1 >> 15) & 1;
         Z = temp1 == 0 ? 1 : 0;
-        V = ((SWORD) *((WORD*)ptrD) < 0) != ((SWORD) temp1 < 0);
-        C = (SWORD) *((WORD*)ptrS) > 0
-            ? (*((WORD*)ptrD) >> (16 - *((WORD*)ptrS))) & 1
-            : (SWORD) *((WORD*)ptrS) < 0
-                ? (*((WORD*)ptrD) >> ((-(SWORD)*((WORD*)ptrS)) - 1)) & 1
+        V = ((SWORD) *((WORD*)(ptr0 + pD)) < 0) != ((SWORD) temp1 < 0);
+        C = (SWORD) *((WORD*)(ptr0 + pS)) > 0
+            ? (*((WORD*)(ptr0 + pD)) >> (16 - *((WORD*)(ptr0 + pS)))) & 1
+            : (SWORD) *((WORD*)(ptr0 + pS)) < 0
+                ? (*((WORD*)(ptr0 + pD)) >> ((-(SWORD)*((WORD*)(ptr0 + pS))) - 1)) & 1
                 : 0;
 
-        *((WORD*)ptrD) = temp1;
+        *((WORD*)(ptr0 + pD)) = temp1;
     } else {
-        temp = ((DWORD)*((WORD*)ptrD) << 16) | ((DWORD) reg[re + 1]);
-        result = (SWORD) *((WORD*)ptrS) > 0
-                    ? temp << *((WORD*)ptrS)
-                    : (SDWORD) temp >> (-(SWORD) *((WORD*)ptrS));
+        temp = ((DWORD)*((WORD*)(ptr0 + pD)) << 16) | ((DWORD) reg[re + 1]);
+        result = (SWORD) *((WORD*)(ptr0 + pS)) > 0
+                    ? temp << *((WORD*)(ptr0 + pS))
+                    : (SDWORD) temp >> (-(SWORD) *((WORD*)(ptr0 + pS)));
 
         N = (SDWORD) result < 0;
         Z = result == 0 ? 1 : 0;
         V = ((SDWORD) temp < 0) != ((SDWORD) result < 0);
-        C = (SWORD) *((WORD*)ptrS) > 0
-                ? (temp >> (32 - *((WORD*)ptrS))) & 1
-                : (SWORD) *((WORD*)ptrS) < 0
-                    ? (temp >> ((-(SWORD)*((WORD*)ptrS)) - 1)) & 1
+        C = (SWORD) *((WORD*)(ptr0 + pS)) > 0
+                ? (temp >> (32 - *((WORD*)(ptr0 + pS)))) & 1
+                : (SWORD) *((WORD*)(ptr0 + pS)) < 0
+                    ? (temp >> ((-(SWORD)*((WORD*)(ptr0 + pS))) - 1)) & 1
                     : 0;
 
         reg[re + 1] = (WORD) result;
-        *((WORD*)ptrD) = (DWORD) result >> 16;
+        *((WORD*)(ptr0 + pD)) = (DWORD) result >> 16;
     }
 }
 void Core::f_aslb() {
     BYTE temp;
     BYTE result;
-    temp = *((WORD*)ptrD);
+    temp = *((WORD*)(ptr0 + pD));
     result = temp << 1;
 
     N = (result >> 7) & 1;
@@ -228,25 +228,25 @@ void Core::f_aslb() {
     V = ((SBYTE) temp < 0) != ((SBYTE) result < 0);
     C = (temp >> 7) & 1;
 
-    *((WORD*)ptrD) = (*((WORD*)ptrD) & 0xff00) | (WORD) result;
+    *((WORD*)(ptr0 + pD)) = (*((WORD*)(ptr0 + pD)) & 0xff00) | (WORD) result;
 }
 void Core::f_asl() {
     WORD temp;
     WORD result;
-    temp = *((WORD*)ptrD);
-    result = *((WORD*)ptrD) << 1;
+    temp = *((WORD*)(ptr0 + pD));
+    result = *((WORD*)(ptr0 + pD)) << 1;
 
     N = (result >> 15) & 1;
     Z = result == 0 ? 1 : 0;
     V = ((SWORD) temp < 0) != ((SWORD) result < 0);
     C = (temp >> 15) & 1;
 
-    *((WORD*)ptrD) <<= 1;
+    *((WORD*)(ptr0 + pD)) <<= 1;
 }
 void Core::f_asrb() {
     BYTE temp;
     BYTE result;
-    temp = *((WORD*)ptrD);
+    temp = *((WORD*)(ptr0 + pD));
     result = (SBYTE) temp >> 1;
 
     N = (result >> 7) & 1;
@@ -255,13 +255,13 @@ void Core::f_asrb() {
         (((SBYTE) temp > 0) && (temp & 0x1));  // ???
     C = temp & 0x1;
 
-    *((WORD*)ptrD) = (*((WORD*)ptrD) & 0xff00) | (WORD) result;
+    *((WORD*)(ptr0 + pD)) = (*((WORD*)(ptr0 + pD)) & 0xff00) | (WORD) result;
 }
 void Core::f_asr() {
     WORD temp;
     WORD result;
-    temp = *((WORD*)ptrD);
-    result = (SWORD) *((WORD*)ptrD) >> 1;
+    temp = *((WORD*)(ptr0 + pD));
+    result = (SWORD) *((WORD*)(ptr0 + pD)) >> 1;
 
     N = (result >> 15) & 1;
     Z = result == 0 ? 1 : 0;
@@ -269,7 +269,7 @@ void Core::f_asr() {
         (((SWORD) temp > 0) && (temp & 0x1));  // ???
     C = temp & 0x1;
 
-    *((WORD*)ptrD) = result;
+    *((WORD*)(ptr0 + pD)) = result;
 }
 void Core::f_bcc() {
     if (C == 0)
@@ -293,47 +293,47 @@ void Core::f_bgt() {
 }
 void Core::f_bicb() {
     BYTE result;
-    result = *((WORD*)ptrD) & ~*((WORD*)ptrS);
+    result = *((WORD*)(ptr0 + pD)) & ~*((WORD*)(ptr0 + pS));
 
     N = (result >> 7) & 1;
     Z = result == 0 ? 1 : 0;
     V = 0;
 
-    *((WORD*)ptrD) = (*((WORD*)ptrD) & 0xff00) | (WORD) result;
+    *((WORD*)(ptr0 + pD)) = (*((WORD*)(ptr0 + pD)) & 0xff00) | (WORD) result;
 }
 void Core::f_bic() {
     WORD result;
-    result = *((WORD*)ptrD) & ~*((WORD*)ptrS);
+    result = *((WORD*)(ptr0 + pD)) & ~*((WORD*)(ptr0 + pS));
 
     N = (result >> 15) & 1;
     Z = result == 0 ? 1 : 0;
     V = 0;
 
-    *((WORD*)ptrD) = *((WORD*)ptrD) & ~*((WORD*)ptrS);
+    *((WORD*)(ptr0 + pD)) = *((WORD*)(ptr0 + pD)) & ~*((WORD*)(ptr0 + pS));
 }
 void Core::f_bisb() {
     BYTE result;
-    result = *((WORD*)ptrD) | *((WORD*)ptrS);
+    result = *((WORD*)(ptr0 + pD)) | *((WORD*)(ptr0 + pS));
 
     N = (result >> 7) & 1;
     Z = result == 0 ? 1 : 0;
     V = 0;
 
-    *((WORD*)ptrD) = (*((WORD*)ptrD) & 0xff00) | (WORD) result;
+    *((WORD*)(ptr0 + pD)) = (*((WORD*)(ptr0 + pD)) & 0xff00) | (WORD) result;
 }
 void Core::f_bis() {
     WORD result;
-    result = *((WORD*)ptrD) | *((WORD*)ptrS);
+    result = *((WORD*)(ptr0 + pD)) | *((WORD*)(ptr0 + pS));
 
     N = (result >> 15) & 1;
     Z = result == 0 ? 1 : 0;
     V = 0;
 
-    *((WORD*)ptrD) = *((WORD*)ptrD) | *((WORD*)ptrS);
+    *((WORD*)(ptr0 + pD)) = *((WORD*)(ptr0 + pD)) | *((WORD*)(ptr0 + pS));
 }
 void Core::f_bitb() {
     BYTE result;
-    result = *((WORD*)ptrD) & *((WORD*)ptrS);
+    result = *((WORD*)(ptr0 + pD)) & *((WORD*)(ptr0 + pS));
 
     N = (result >> 7) & 1;
     Z = result == 0 ? 1 : 0;
@@ -341,7 +341,7 @@ void Core::f_bitb() {
 }
 void Core::f_bit() {
     WORD result;
-    result = *((WORD*)ptrD) & *((WORD*)ptrS);
+    result = *((WORD*)(ptr0 + pD)) & *((WORD*)(ptr0 + pS));
 
     N = (result >> 15) & 1;
     Z = result == 0 ? 1 : 0;
@@ -404,7 +404,7 @@ void Core::f_clrb() {
     V = 0;
     C = 0;
 
-    *((WORD*)ptrD) = *((WORD*)ptrD) & 0xff00;
+    *((WORD*)(ptr0 + pD)) = *((WORD*)(ptr0 + pD)) & 0xff00;
 }
 void Core::f_clr() {
     N = 0;
@@ -412,7 +412,7 @@ void Core::f_clr() {
     V = 0;
     C = 0;
 
-    *((WORD*)ptrD) = 0;
+    *((WORD*)(ptr0 + pD)) = 0;
 }
 void Core::f_clv() {
     V = 0;
@@ -423,8 +423,8 @@ void Core::f_clz() {
 void Core::f_cmpb() {
     BYTE result;
     BYTE temp1, temp2;
-    temp1 = (BYTE) *((WORD*)ptrS);
-    temp2 = (BYTE) *((WORD*)ptrD);
+    temp1 = (BYTE) *((WORD*)(ptr0 + pS));
+    temp2 = (BYTE) *((WORD*)(ptr0 + pD));
     result = temp1 - temp2;
 
     N = (result >> 7) & 1;
@@ -435,57 +435,57 @@ void Core::f_cmpb() {
 }
 void Core::f_cmp() {
     WORD result;
-    result = *((WORD*)ptrS) - *((WORD*)ptrD);
+    result = *((WORD*)(ptr0 + pS)) - *((WORD*)(ptr0 + pD));
 
     N = (result >> 15) & 1;
     Z = result == 0 ? 1 : 0;
-    V = ((SWORD) *((WORD*)ptrS) < 0) != ((SWORD) *((WORD*)ptrD) < 0) &&
-        ((SWORD) *((WORD*)ptrS) < 0) != ((SWORD) result < 0);
-    C = *((WORD*)ptrS) < *((WORD*)ptrD);
+    V = ((SWORD) *((WORD*)(ptr0 + pS)) < 0) != ((SWORD) *((WORD*)(ptr0 + pD)) < 0) &&
+        ((SWORD) *((WORD*)(ptr0 + pS)) < 0) != ((SWORD) result < 0);
+    C = *((WORD*)(ptr0 + pS)) < *((WORD*)(ptr0 + pD));
 }
 void Core::f_comb() {
     BYTE result;
-    result = ~*((WORD*)ptrD);
+    result = ~*((WORD*)(ptr0 + pD));
 
     N = (result >> 7) & 1;
     Z = result == 0 ? 1 : 0;
     V = 0;
     C = 1;
 
-    *((WORD*)ptrD) = (*((WORD*)ptrD) & 0xff00) | (WORD) result;
+    *((WORD*)(ptr0 + pD)) = (*((WORD*)(ptr0 + pD)) & 0xff00) | (WORD) result;
 }
 void Core::f_com() {
     WORD result;
-    result = ~*((WORD*)ptrD);
+    result = ~*((WORD*)(ptr0 + pD));
 
     N = (result >> 15) & 1;
     Z = result == 0 ? 1 : 0;
     V = 0;
     C = 1;
 
-    *((WORD*)ptrD) = ~*((WORD*)ptrD);
+    *((WORD*)(ptr0 + pD)) = ~*((WORD*)(ptr0 + pD));
 }
 void Core::f_decb() {
     BYTE result;
     BYTE temp;
-    temp = (BYTE) (*((WORD*)ptrD) & 0xff);
+    temp = (BYTE) (*((WORD*)(ptr0 + pD)) & 0xff);
     result = temp - 1;
 
     N = (result >> 7) & 1;
     Z = result == 0 ? 1 : 0;
     V = ((SBYTE) temp < 0) && ((SBYTE) temp < 0) != ((SBYTE) result < 0);
 
-    *((WORD*)ptrD) = (*((WORD*)ptrD) & 0xff00) | (WORD) result;
+    *((WORD*)(ptr0 + pD)) = (*((WORD*)(ptr0 + pD)) & 0xff00) | (WORD) result;
 }
 void Core::f_dec() {
     WORD result;
-    result = *((WORD*)ptrD) - 1;
+    result = *((WORD*)(ptr0 + pD)) - 1;
 
     N = (result >> 15) & 1;
     Z = result == 0 ? 1 : 0;
-    V = ((SWORD) *((WORD*)ptrD) < 0) && ((SWORD) *((WORD*)ptrD) < 0) != ((SWORD) result < 0);
+    V = ((SWORD) *((WORD*)(ptr0 + pD)) < 0) && ((SWORD) *((WORD*)(ptr0 + pD)) < 0) != ((SWORD) result < 0);
 
-    *((WORD*)ptrD) -= 1;
+    *((WORD*)(ptr0 + pD)) -= 1;
 }
 void Core::f_div() {
     BYTE Ztf = 0;
@@ -495,14 +495,14 @@ void Core::f_div() {
     WORD ostatok;
     WORD itog;
     if (re % 2) {
-        temp = ((DWORD) reg[re - 1] << 16) | ((DWORD) *((WORD*)ptrD));
+        temp = ((DWORD) reg[re - 1] << 16) | ((DWORD) *((WORD*)(ptr0 + pD)));
         altfl = 1;
     } else {
-        temp = ((DWORD) *((WORD*)ptrD) << 16) | ((DWORD) reg[re + 1]);
+        temp = ((DWORD) *((WORD*)(ptr0 + pD)) << 16) | ((DWORD) reg[re + 1]);
     }
-    if (*((WORD*)ptrS) != 0) {
-        result = temp / (SWORD) *((WORD*)ptrS);
-        ostatok = temp % (SWORD) *((WORD*)ptrS);
+    if (*((WORD*)(ptr0 + pS)) != 0) {
+        result = temp / (SWORD) *((WORD*)(ptr0 + pS));
+        ostatok = temp % (SWORD) *((WORD*)(ptr0 + pS));
 
         if (altfl)
             V = 0;
@@ -532,9 +532,9 @@ void Core::f_div() {
 
         if (re % 2) {
             reg[re - 1] = itog;
-            *((WORD*)ptrD) = ostatok;
+            *((WORD*)(ptr0 + pD)) = ostatok;
         } else {
-            *((WORD*)ptrD) = itog;
+            *((WORD*)(ptr0 + pD)) = itog;
             reg[re + 1] = ostatok;
         }
     } else {
@@ -562,36 +562,36 @@ void Core::f_halt() {
 void Core::f_incb() {
     BYTE result;
     BYTE temp;
-    temp = (BYTE) (*((WORD*)ptrD) & 0xff);
+    temp = (BYTE) (*((WORD*)(ptr0 + pD)) & 0xff);
     result = temp + 1;
 
     N = (result >> 7) & 1;
     Z = result == 0 ? 1 : 0;
     V = ((SBYTE) temp > 0) && ((SBYTE) temp < 0) != ((SBYTE) result < 0);
 
-    *((WORD*)ptrD) = (*((WORD*)ptrD) & 0xff00) | (WORD) result;
+    *((WORD*)(ptr0 + pD)) = (*((WORD*)(ptr0 + pD)) & 0xff00) | (WORD) result;
 }
 void Core::f_inc() {
     WORD result;
-    result = *((WORD*)ptrD) + 1;
+    result = *((WORD*)(ptr0 + pD)) + 1;
 
     N = (result >> 15) & 1;
     Z = result == 0 ? 1 : 0;
-    V = ((SWORD) *((WORD*)ptrD) > 0) && ((SWORD) *((WORD*)ptrD) < 0) != ((SWORD) result < 0);
+    V = ((SWORD) *((WORD*)(ptr0 + pD)) > 0) && ((SWORD) *((WORD*)(ptr0 + pD)) < 0) != ((SWORD) result < 0);
 
-    *((WORD*)ptrD) += 1;
+    *((WORD*)(ptr0 + pD)) += 1;
 }
 void Core::f_iot() {
     std::printf("f_iot");
 }
 void Core::f_jmp() {
-    PC = (ptrD - ptr0);
+    PC = pD;
 }
 void Core::f_jsr() {
     SP -= 2;
-    mem->writeword(SP, *((WORD*)ptrS));
-    *((WORD*)ptrS) = PC;
-    PC = (ptrD - ptr0);
+    mem->writeword(SP, *((WORD*)(ptr0 + pS)));
+    *((WORD*)(ptr0 + pS)) = PC;
+    PC = pD;
 }
 void Core::f_mark() {
     std::printf("f_mark");
@@ -608,31 +608,31 @@ void Core::f_mfps() {
 void Core::f_movb() {
     BYTE temp;
     if (last_mo) {
-        if ((ptrS - ptr0) == IDATA)
-            *((WORD*)ptrS) = getchar();
+        if (pS == IDATA)
+            *((WORD*)(ptr0 + pS)) = getchar();
     }
-    temp = (BYTE) (*((WORD*)ptrS) & 0xff);
+    temp = (BYTE) (*((WORD*)(ptr0 + pS)) & 0xff);
 
     N = (temp >> 7) & 1;
     Z = temp == 0 ? 1 : 0;
     V = 0;
 
     if (mo)
-        *((WORD*)ptrD) = (*((WORD*)ptrD) & 0xff00) | (*((WORD*)ptrS) & 0xff);
+        *((WORD*)(ptr0 + pD)) = (*((WORD*)(ptr0 + pD)) & 0xff00) | (*((WORD*)(ptr0 + pS)) & 0xff);
     else
-        *((WORD*)ptrD) = (SBYTE) temp;
+        *((WORD*)(ptr0 + pD)) = (SBYTE) temp;
 }
 void Core::f_mov() {
     if (last_mo) {
-        if ((ptrS - ptr0) == IDATA)
-            *((WORD*)ptrS) = getchar();
+        if (pS == IDATA)
+            *((WORD*)(ptr0 + pS)) = getchar();
     }
 
-    N = (*((WORD*)ptrS) >> 15) & 1;
-    Z = *((WORD*)ptrS) == 0 ? 1 : 0;
+    N = (*((WORD*)(ptr0 + pS)) >> 15) & 1;
+    Z = *((WORD*)(ptr0 + pS)) == 0 ? 1 : 0;
     V = 0;
 
-    *((WORD*)ptrD) = *((WORD*)ptrS);
+    *((WORD*)(ptr0 + pD)) = *((WORD*)(ptr0 + pS));
 }
 void Core::f_mtpd() {
     std::printf("f_mtpd");
@@ -645,7 +645,7 @@ void Core::f_mtps() {
 }
 void Core::f_mul() {
     SDWORD result;
-    result = (SWORD) *((WORD*)ptrD) * (SWORD) *((WORD*)ptrS);
+    result = (SWORD) *((WORD*)(ptr0 + pD)) * (SWORD) *((WORD*)(ptr0 + pS));
 
     N = result < 0;
     Z = result == 0 ? 1 : 0;
@@ -653,33 +653,33 @@ void Core::f_mul() {
     C = (result >> 16) != 0;
 
     if (re % 2) {
-        *((WORD*)ptrD) = (WORD) result;
+        *((WORD*)(ptr0 + pD)) = (WORD) result;
     } else {
-        *((WORD*)ptrD) = (WORD)(result >> 16);
+        *((WORD*)(ptr0 + pD)) = (WORD)(result >> 16);
         reg[re + 1] = (WORD) result;
     }
 }
 void Core::f_negb() {
     BYTE result;
-    result = ~*((WORD*)ptrD) + 1;
+    result = ~*((WORD*)(ptr0 + pD)) + 1;
 
     N = (result >> 7) & 1;
     Z = result == 0 ? 1 : 0;
     V = result == 0200 ? 1 : 0;
     C = result == 0 ? 0 : 1;
 
-    *((WORD*)ptrD) = (*((WORD*)ptrD) & 0xff00) | (WORD) result;
+    *((WORD*)(ptr0 + pD)) = (*((WORD*)(ptr0 + pD)) & 0xff00) | (WORD) result;
 }
 void Core::f_neg() {
     WORD result;
-    result = ~*((WORD*)ptrD) + 1;
+    result = ~*((WORD*)(ptr0 + pD)) + 1;
 
     N = (result >> 15) & 1;
     Z = result == 0 ? 1 : 0;
     V = result == 0100000 ? 1 : 0;
     C = result == 0 ? 0 : 1;
 
-    *((WORD*)ptrD) = ~*((WORD*)ptrD) + 1;
+    *((WORD*)(ptr0 + pD)) = ~*((WORD*)(ptr0 + pD)) + 1;
 }
 void Core::f_nop() {
     std::printf("f_nop");
@@ -690,63 +690,63 @@ void Core::f_reset() {
 void Core::f_rolb() {
     BYTE temp;
     BYTE result;
-    temp = (*((WORD*)ptrD) & 0200) >> 7;
-    result = (*((WORD*)ptrD) << 1) | C;
+    temp = (*((WORD*)(ptr0 + pD)) & 0200) >> 7;
+    result = (*((WORD*)(ptr0 + pD)) << 1) | C;
 
     C = temp;
-    temp = *((WORD*)ptrD);
+    temp = *((WORD*)(ptr0 + pD));
     N = (result >> 7) & 1;
     Z = result == 0 ? 1 : 0;
     V = ((SBYTE) temp < 0) != ((SBYTE) result < 0);
 
-    *((WORD*)ptrD) = (*((WORD*)ptrD) & 0xff00) | (WORD) result;
+    *((WORD*)(ptr0 + pD)) = (*((WORD*)(ptr0 + pD)) & 0xff00) | (WORD) result;
 }
 void Core::f_rol() {
     BYTE temp;
     WORD result;
-    temp = (*((WORD*)ptrD) & 0100000) >> 15;
-    result = (*((WORD*)ptrD) << 1) | C;
+    temp = (*((WORD*)(ptr0 + pD)) & 0100000) >> 15;
+    result = (*((WORD*)(ptr0 + pD)) << 1) | C;
 
     N = (result >> 15) & 1;
     Z = result == 0 ? 1 : 0;
-    V = ((SWORD) *((WORD*)ptrD) < 0) != ((SWORD) result < 0);
+    V = ((SWORD) *((WORD*)(ptr0 + pD)) < 0) != ((SWORD) result < 0);
     C = temp;
 
-    *((WORD*)ptrD) = result;
+    *((WORD*)(ptr0 + pD)) = result;
 }
 void Core::f_rorb() {
     BYTE temp;
     BYTE result;
-    temp = *((WORD*)ptrD) & 1;
-    result = ((BYTE) *((WORD*)ptrD) >> 1) | (C << 7);
+    temp = *((WORD*)(ptr0 + pD)) & 1;
+    result = ((BYTE) *((WORD*)(ptr0 + pD)) >> 1) | (C << 7);
 
     C = temp;
-    temp = *((WORD*)ptrD);
+    temp = *((WORD*)(ptr0 + pD));
     N = (result >> 7) & 1;
     Z = result == 0 ? 1 : 0;
-    V = ((SBYTE) *((WORD*)ptrD) < 0) != ((SBYTE) result < 0);
+    V = ((SBYTE) *((WORD*)(ptr0 + pD)) < 0) != ((SBYTE) result < 0);
 
-    *((WORD*)ptrD) = (*((WORD*)ptrD) & 0xff00) | (WORD) result;
+    *((WORD*)(ptr0 + pD)) = (*((WORD*)(ptr0 + pD)) & 0xff00) | (WORD) result;
 }
 void Core::f_ror() {
     WORD temp;
     WORD result;
-    temp = *((WORD*)ptrD) & 1;
-    result = (*((WORD*)ptrD) >> 1) | ((WORD) C << 15);
+    temp = *((WORD*)(ptr0 + pD)) & 1;
+    result = (*((WORD*)(ptr0 + pD)) >> 1) | ((WORD) C << 15);
 
     N = (result >> 15) & 1;
     Z = result == 0 ? 1 : 0;
-    V = ((SWORD) *((WORD*)ptrD) < 0) != ((SWORD) result < 0);
+    V = ((SWORD) *((WORD*)(ptr0 + pD)) < 0) != ((SWORD) result < 0);
     C = temp;
 
-    *((WORD*)ptrD) = result;
+    *((WORD*)(ptr0 + pD)) = result;
 }
 void Core::f_rti() {
     std::printf("f_rti");
 }
 void Core::f_rts() {
-    PC = *((WORD*)ptrD);
-    *((WORD*)ptrD) = mem->readword(SP);
+    PC = *((WORD*)(ptr0 + pD));
+    *((WORD*)(ptr0 + pD)) = mem->readword(SP);
     SP += 2;
 }
 void Core::f_rtt() {
@@ -755,7 +755,7 @@ void Core::f_rtt() {
 void Core::f_sbcb() {
     BYTE result;
     BYTE temp;
-    temp = (BYTE) (*((WORD*)ptrD) & 0xff);
+    temp = (BYTE) (*((WORD*)(ptr0 + pD)) & 0xff);
     result = temp - C;
 
     N = (result >> 7) & 1;
@@ -763,20 +763,20 @@ void Core::f_sbcb() {
     V = ((SBYTE) temp < 0) && ((SBYTE) result > 0);
     C = temp == 0 && C == 1;
 
-    *((WORD*)ptrD) = (*((WORD*)ptrD) & 0xff00) | (WORD) result;
+    *((WORD*)(ptr0 + pD)) = (*((WORD*)(ptr0 + pD)) & 0xff00) | (WORD) result;
 }
 void Core::f_sbc() {
     DWORD temp;
     WORD result;
-    temp = (DWORD) *((WORD*)ptrD) - C;
+    temp = (DWORD) *((WORD*)(ptr0 + pD)) - C;
     result = (WORD) temp;
 
     N = (temp >> 15) & 1;
     Z = result == 0 ? 1 : 0;
-    V = ((SWORD) *((WORD*)ptrD) < 0) && ((SWORD) result > 0);
-    C = *((WORD*)ptrD) == 0 && C == 1;
+    V = ((SWORD) *((WORD*)(ptr0 + pD)) < 0) && ((SWORD) result > 0);
+    C = *((WORD*)(ptr0 + pD)) == 0 && C == 1;
 
-    *((WORD*)ptrD) = (WORD) temp;
+    *((WORD*)(ptr0 + pD)) = (WORD) temp;
 }
 void Core::f_scc() {
     N = Z = V = C = 1;
@@ -802,26 +802,26 @@ void Core::f_spl() {
 void Core::f_sub() {
     DWORD temp;
     WORD result;
-    temp = (DWORD) *((WORD*)ptrD) - (DWORD) *((WORD*)ptrS);
+    temp = (DWORD) *((WORD*)(ptr0 + pD)) - (DWORD) *((WORD*)(ptr0 + pS));
     result = (WORD) temp;
 
     N = (temp >> 15) & 1;
     Z = result == 0 ? 1 : 0;
-    V = ((SWORD) *((WORD*)ptrS) < 0) != ((SWORD) *((WORD*)ptrD) < 0) &&
-        ((SWORD) *((WORD*)ptrD) < 0) != ((SWORD) result < 0);
-    C = *((WORD*)ptrD) < *((WORD*)ptrS);
+    V = ((SWORD) *((WORD*)(ptr0 + pS)) < 0) != ((SWORD) *((WORD*)(ptr0 + pD)) < 0) &&
+        ((SWORD) *((WORD*)(ptr0 + pD)) < 0) != ((SWORD) result < 0);
+    C = *((WORD*)(ptr0 + pD)) < *((WORD*)(ptr0 + pS));
 
-    *((WORD*)ptrD) = (WORD) temp;
+    *((WORD*)(ptr0 + pD)) = (WORD) temp;
 }
 void Core::f_swab() {
     BYTE temp;
-    temp = *((WORD*)ptrD);
+    temp = *((WORD*)(ptr0 + pD));
 
     N = (temp >> 7) & 1;
     Z = temp == 0 ? 1 : 0;
     V = C = 0;
 
-    *((WORD*)ptrD) = (*((WORD*)ptrD) >> 8) | ((WORD)temp << 8);
+    *((WORD*)(ptr0 + pD)) = (*((WORD*)(ptr0 + pD)) >> 8) | ((WORD)temp << 8);
 }
 void Core::f_sxt() {
     std::printf("f_sxt");
@@ -831,7 +831,7 @@ void Core::f_trap() {
 }
 void Core::f_tstb() {
     BYTE temp;
-    temp = (BYTE) *((WORD*)ptrD);
+    temp = (BYTE) *((WORD*)(ptr0 + pD));
 
     N = (temp >> 7) & 1;
     Z = temp == 0 ? 1 : 0;
@@ -839,8 +839,8 @@ void Core::f_tstb() {
     C = 0;
 }
 void Core::f_tst() {
-    N = (*((WORD*)ptrD) >> 15) & 1;
-    Z = *((WORD*)ptrD) == 0 ? 1 : 0;
+    N = (*((WORD*)(ptr0 + pD)) >> 15) & 1;
+    Z = *((WORD*)(ptr0 + pD)) == 0 ? 1 : 0;
     V = 0;
     C = 0;
 }
@@ -984,16 +984,16 @@ void Core::print_end() {
 /*DECODER***************************************************************/
 void Core::select_operand(Ident ident) {
     WORD offset;
-    BYTE* ptr;
+    SDWORD ptr;
     switch (mo) {
         case 0:
-            ptr = (BYTE*)&reg[re];
+            ptr = (BYTE*)&reg[re] - ptr0;
             switch (ident) {
                 case SRC:
-                    ptrS = ptr;
+                    pS = ptr;
                     break;
                 case DTN:
-                    ptrD = ptr;
+                    pD = ptr;
                     break;
                 default:
                     break;
@@ -1001,13 +1001,13 @@ void Core::select_operand(Ident ident) {
             break;
         case 1:
             if (mem->checkmem(reg[re], 1)) {
-                ptr = ((BYTE*)ptr0 + reg[re]);
+                ptr = reg[re];
                 switch (ident) {
                     case SRC:
-                        ptrS = ptr;
+                        pS = ptr;
                         break;
                     case DTN:
-                        ptrD = ptr;
+                        pD = ptr;
                         break;
                     default:
                         break;
@@ -1016,13 +1016,13 @@ void Core::select_operand(Ident ident) {
             break;
         case 2:
             if (mem->checkmem(reg[re], 1)) {
-                ptr = ((BYTE*)ptr0 + reg[re]);
+                ptr = reg[re];
                 switch (ident) {
                     case SRC:
-                        ptrS = ptr;
+                        pS = ptr;
                         break;
                     case DTN:
-                        ptrD = ptr;
+                        pD = ptr;
                         break;
                     default:
                         break;
@@ -1036,13 +1036,13 @@ void Core::select_operand(Ident ident) {
         case 3:
             if (mem->checkmem(reg[re], 2) &&
                 mem->checkmem(mem->readword(reg[re]), 1)) {
-                ptr = ((BYTE*)ptr0 + mem->readword(reg[re]));
+                ptr = mem->readword(reg[re]);
                 switch (ident) {
                     case SRC:
-                        ptrS = ptr;
+                        pS = ptr;
                         break;
                     case DTN:
-                        ptrD = ptr;
+                        pD = ptr;
                         break;
                     default:
                         break;
@@ -1056,13 +1056,13 @@ void Core::select_operand(Ident ident) {
             else if (instrs[idx].size == 2 || re >= 6)
                 reg[re] -= 2;
             if (mem->checkmem(reg[re], 1)) {
-                ptr = ((BYTE*)ptr0 + reg[re]);
+                ptr = reg[re];
                 switch (ident) {
                     case SRC:
-                        ptrS = ptr;
+                        pS = ptr;
                         break;
                     case DTN:
-                        ptrD = ptr;
+                        pD = ptr;
                         break;
                     default:
                         break;
@@ -1073,13 +1073,13 @@ void Core::select_operand(Ident ident) {
             reg[re] -= 2;
             if (mem->checkmem(reg[re], 2) &&
                 mem->checkmem(mem->readword(reg[re]), 1)) {
-                    ptr = ((BYTE*)ptr0 + mem->readword(reg[re]));
+                    ptr = mem->readword(reg[re]);
                     switch (ident) {
                     case SRC:
-                        ptrS = ptr;
+                        pS = ptr;
                         break;
                     case DTN:
-                        ptrD = ptr;
+                        pD = ptr;
                         break;
                     default:
                         break;
@@ -1090,13 +1090,13 @@ void Core::select_operand(Ident ident) {
             offset = mem->readword(PC);
             PC += 2;
             if (mem->checkmem((WORD)(reg[re] + offset), 1)) {
-                ptr = ((BYTE*)ptr0 + (WORD)(reg[re] + offset));
+                ptr = (WORD)(reg[re] + offset);
                 switch (ident) {
                     case SRC:
-                        ptrS = ptr;
+                        pS = ptr;
                         break;
                     case DTN:
-                        ptrD = ptr;
+                        pD = ptr;
                         break;
                     default:
                         break;
@@ -1108,13 +1108,13 @@ void Core::select_operand(Ident ident) {
             PC += 2;
             if (mem->checkmem((WORD)(reg[re] + offset), 2) &&
                 mem->checkmem(mem->readword((WORD)(reg[re] + offset)), 1)) {
-                ptr = ((BYTE*)ptr0 + mem->readword((WORD)(reg[re] + offset)));
+                ptr = mem->readword((WORD)(reg[re] + offset));
                 switch (ident) {
                     case SRC:
-                        ptrS = ptr;
+                        pS = ptr;
                         break;
                     case DTN:
-                        ptrD = ptr;
+                        pD = ptr;
                         break;
                     default:
                         break;
@@ -1243,8 +1243,8 @@ Core::Core() : mem(new Memory()),
                        N(0), Z(0), V(0), C(0),
                        idx(0),
                        countfrsp(0),
-                       ptrD(0),
-                       ptrS(0),
+                       pD(0),
+                       pS(0),
                        pcsmflag(0),
                        pcsmcnt(0) {
     for (unsigned i = 0; i < sizeof(reg) / sizeof(reg[0]); ++i) {

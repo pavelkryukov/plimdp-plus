@@ -25,7 +25,8 @@ class Core {
     SBYTE xx;
     BYTE N, Z, V, C;
     BYTE idx, countfrsp;
-    BYTE *ptrD, *ptrS, *ptr0;
+    BYTE *ptr0;
+    SDWORD pD, pS;
     BYTE pcsmflag, pcsmcnt;
 
     static struct Instruction {
