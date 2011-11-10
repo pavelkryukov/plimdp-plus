@@ -38,11 +38,6 @@ enum InstrType {
     T_RNN,
     T_N,
 };
-
-enum Ident {
-    SRC,
-    DTN,
-};
 }
 
 #endif

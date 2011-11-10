@@ -968,56 +968,24 @@ void Core::print_end() {
                     N, Z, V, C);
 }
 /*DECODER***************************************************************/
-void Core::select_operand(Ident ident) {
+Core::Pointer Core::select_operand() {
+    Core::Pointer pointer;
     WORD offset;
-    SDWORD ptr;
     switch (mo) {
         case 0:
-            switch (ident) {
-                case SRC:
-                    pS.index = re;
-                    pS.type = Pointer::REGISTER;
-                    break;
-                case DTN:
-                    pD.index = re;
-                    pD.type = Pointer::REGISTER;
-                    break;
-                default:
-                    break;
-            }
+            pointer.index = re;
+            pointer.type = Pointer::REGISTER;
             break;
         case 1:
             if (mem->checkmem(reg[re], 1)) {
-                ptr = reg[re];
-                switch (ident) {
-                    case SRC:
-                        pS.index = ptr;
-                        pS.type = Pointer::MEMORY;
-                        break;
-                    case DTN:
-                        pD.index = ptr;
-                        pD.type = Pointer::MEMORY;
-                        break;
-                    default:
-                        break;
-                }
+                pointer.index = reg[re];
+                pointer.type = Pointer::MEMORY;
             }
             break;
         case 2:
             if (mem->checkmem(reg[re], 1)) {
-                ptr = reg[re];
-                switch (ident) {
-                    case SRC:
-                        pS.index = ptr;
-                        pS.type = Pointer::MEMORY;
-                        break;
-                    case DTN:
-                        pD.index = ptr;
-                        pD.type = Pointer::MEMORY;
-                        break;
-                    default:
-                        break;
-                }
+                pointer.index = reg[re];                
+                pointer.type = Pointer::MEMORY;
             }
             if (instrs[idx].size == 1 && re < 6)
                 reg[re]++;
@@ -1027,19 +995,8 @@ void Core::select_operand(Ident ident) {
         case 3:
             if (mem->checkmem(reg[re], 2) &&
                 mem->checkmem(mem->readword(reg[re]), 1)) {
-                ptr = mem->readword(reg[re]);
-                switch (ident) {
-                    case SRC:
-                        pS.index = ptr;
-                        pS.type = Pointer::MEMORY;
-                        break;
-                    case DTN:
-                        pD.index = ptr;
-                        pD.type = Pointer::MEMORY;
-                        break;
-                    default:
-                        break;
-                }
+                pointer.index = mem->readword(reg[re]); 
+                pointer.type = Pointer::MEMORY;
             }
             reg[re] += 2;
             break;
@@ -1049,57 +1006,24 @@ void Core::select_operand(Ident ident) {
             else if (instrs[idx].size == 2 || re >= 6)
                 reg[re] -= 2;
             if (mem->checkmem(reg[re], 1)) {
-                ptr = reg[re];
-                switch (ident) {
-                    case SRC:
-                        pS.index = ptr;
-                        pS.type = Pointer::MEMORY;
-                        break;
-                    case DTN:
-                        pD.index = ptr;
-                        pD.type = Pointer::MEMORY;
-                        break;
-                    default:
-                        break;
-                }
+                pointer.index = reg[re];                
+                pointer.type = Pointer::MEMORY;
             }
             break;
         case 5:
             reg[re] -= 2;
             if (mem->checkmem(reg[re], 2) &&
                 mem->checkmem(mem->readword(reg[re]), 1)) {
-                ptr = mem->readword(reg[re]);
-                switch (ident) {
-                    case SRC:
-                        pS.index = ptr;
-                        pS.type = Pointer::MEMORY;
-                        break;
-                    case DTN:
-                        pD.index = ptr;
-                        pD.type = Pointer::MEMORY;
-                        break;
-                    default:
-                        break;
-                }
+                pointer.index = mem->readword(reg[re]);                
+                pointer.type = Pointer::MEMORY;
             }
             break;
         case 6:
             offset = mem->readword(PC);
             PC += 2;
             if (mem->checkmem((WORD)(reg[re] + offset), 1)) {
-                ptr = (WORD)(reg[re] + offset);
-                switch (ident) {
-                    case SRC:
-                        pS.index = ptr;
-                        pS.type = Pointer::MEMORY;
-                        break;
-                    case DTN:
-                        pD.index = ptr;
-                        pD.type = Pointer::MEMORY;
-                        break;
-                    default:
-                        break;
-                }
+                pointer.index = (WORD)(reg[re] + offset);                
+                pointer.type = Pointer::MEMORY;
             }
             break;
         case 7:
@@ -1107,22 +1031,12 @@ void Core::select_operand(Ident ident) {
             PC += 2;
             if (mem->checkmem((WORD)(reg[re] + offset), 2) &&
                 mem->checkmem(mem->readword((WORD)(reg[re] + offset)), 1)) {
-                ptr = mem->readword((WORD)(reg[re] + offset));
-                switch (ident) {
-                    case SRC:
-                        pS.index = ptr;
-                        pS.type = Pointer::MEMORY;
-                        break;
-                    case DTN:
-                        pD.index = ptr;
-                        pD.type = Pointer::MEMORY;
-                        break;
-                    default:
-                        break;
-                }
+                pointer.index = mem->readword((WORD)(reg[re] + offset));                
+                pointer.type = Pointer::MEMORY;
             }
             break;
     }
+    return pointer;
 }
 BYTE Core::decode_m(BYTE a) {
     return (a & 070) >> 3;
@@ -1142,14 +1056,14 @@ void Core::decode(KeyRW mode) {
                 std::printf(",");
                 countfrsp -= 1;
             }
-            select_operand(SRC);
+            pS = select_operand();
             last_mo = mo;
                 dd = opcode & 0000077;
             mo = decode_m(dd);
             re = decode_r(dd);
             if (mode == WRITE)
                 print_op();
-            select_operand(DTN);
+            pD = select_operand();
             break;
         case T_DD:
                 dd = opcode & 0000077;
@@ -1157,7 +1071,7 @@ void Core::decode(KeyRW mode) {
             re = decode_r(dd);
             if (mode == WRITE)
                 print_op();
-            select_operand(DTN);
+            pD = select_operand();
             break;
         case T_XX:
                 xx = opcode & 0xFF;
@@ -1173,13 +1087,13 @@ void Core::decode(KeyRW mode) {
                 std::printf(",");
                 countfrsp -= 1;
             }
-            select_operand(SRC);
+            pS = select_operand();
             last_mo = mo;
             mo = 0;
             re = (opcode & 0000700) >> 6;
             if (mode == WRITE)
                 print_op();
-            select_operand(DTN);
+            pD = select_operand();
             break;
         case T_RDD:
             mo = 0;
@@ -1189,21 +1103,21 @@ void Core::decode(KeyRW mode) {
                 std::printf(",");
                 countfrsp -= 1;
             }
-            select_operand(SRC);
+            pS = select_operand();
             last_mo = mo;
                 dd = opcode & 0000077;
             mo = decode_m(dd);
             re = decode_r(dd);
             if (mode == WRITE)
                 print_op();
-            select_operand(DTN);
+            pD = select_operand();
             break;
         case T_R:
             mo = 0;
             re = opcode & 0000007;
             if (mode == WRITE)
                 print_op();
-            select_operand(DTN);
+            pD = select_operand();
             break;
         case T_NONE:
             break;

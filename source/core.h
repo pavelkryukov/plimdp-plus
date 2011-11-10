@@ -170,7 +170,7 @@ class Core {
     void print_aim();
     void print_end();
 
-    void select_operand(Ident ident);
+    Pointer select_operand();
     BYTE decode_m(BYTE a);
     BYTE decode_r(BYTE a);
     void decode(KeyRW mode);
