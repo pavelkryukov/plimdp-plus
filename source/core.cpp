@@ -17,12 +17,6 @@ namespace PlimDP {
 #define PC (reg[7])
 #define SP (reg[6])
 
-#if ENABLE_TRACE
-#define DUMP(OPERATIONS) OPERATIONS
-#else
-#define DUMP(OPERATIONS)
-#endif
-
 /*SPECIAL FUNCTIONS*****************************************************/
 void Core::f_adcb() {
     BYTE result;
@@ -910,12 +904,13 @@ void Core::start() {
     do {
         // Fetch
         opcode = mem->readword(PC);        //
-        PC += 2;                    //
-        Instr instr = ISA::find_instrs(opcode);        //
+        PC += 2;            //
+
+        // Decode
+        const Instr instr = ISA::find_instrs(opcode);        //
 
         DUMP( dump->mn(instr); )
 
-        // Decode
         decode(opcode, instr);
 
         DUMP( dump->oldPC = PC; )
