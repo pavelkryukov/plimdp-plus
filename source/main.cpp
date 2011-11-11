@@ -16,11 +16,16 @@
 
 int main(int ac, char *av[]) {
     if (ac != 2) {
-        std::printf("error\n");
+        std::printf("Syntax error\n");
         return 1;
     }
+    
+    PlimDP::Memory memory11;
+    memory11.load(std::string(av[1]));
+
     PlimDP::Core pdp11;
-    pdp11.load(std::string(av[1]));
+    pdp11.setMemory(&memory11);
     pdp11.start();
+    
     return 0;
 }

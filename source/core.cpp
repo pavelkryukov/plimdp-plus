@@ -882,8 +882,7 @@ void Core::decode(WORD opcode, const Instr & instr) {
     }
 }
 /* MAIN_FUNCTIONS*******************************************************/
-Core::Core() : mem(new Memory()),
-               re(0),
+Core::Core() : re(0),
                N(0), Z(0), V(0), C(0),
                mo(0), xx(0) {
     dump = new CoreDump(this);
@@ -893,7 +892,6 @@ Core::Core() : mem(new Memory()),
 }
 
 Core::~Core() {
-    delete mem;
     delete dump;
 }
 

@@ -10,8 +10,6 @@
 #ifndef CORE_H
 #define CORE_H
 
-#include <string>
-
 #include "./types.h"
 #include "./memory.h"
 #include "./coredump.h"
@@ -23,7 +21,7 @@ class Core {
     friend class ISA;
   
     // Memory
-    Memory* const mem;
+    Memory* mem;
 
     // Registers
     WORD reg[8];
@@ -176,8 +174,8 @@ class Core {
     Core();
     ~Core();
 
-    inline void load(const std::string & file) {
-        mem->load(file);
+    inline void setMemory(Memory* memory) {
+        mem = memory;
     }
 
     void start();
