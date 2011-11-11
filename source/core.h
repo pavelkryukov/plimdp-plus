@@ -20,6 +20,8 @@
 namespace PlimDP {
 class Core {
   private:
+    friend class ISA;
+  
     // Memory
     Memory* const mem;
 
@@ -65,11 +67,6 @@ class Core {
     }
 
     Pointer pS, pD;
-
-    // Instruction set
-    static Instr instrs[];
-    static size_t instrs_s;
-    BYTE find_instrs(WORD opcode);
 
     void f_adcb();
     void f_adc();
@@ -167,10 +164,10 @@ class Core {
     void f_xor();
 
     // Decoder
-    Pointer select_operand(BYTE idx);
+    Pointer select_operand(const Instr & instr);
     BYTE decode_m(BYTE a);
     BYTE decode_r(BYTE a);
-    void decode(WORD opcode, BYTE idx);
+    void decode(WORD opcode, const Instr & instr);
 
     // Dump
     friend class CoreDump;

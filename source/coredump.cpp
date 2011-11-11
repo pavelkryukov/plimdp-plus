@@ -22,9 +22,9 @@ void CoreDump::running() {
     std::printf("\n---------------- running --------------\n");
 }
 
-void CoreDump::mn(BYTE idx) {
+void CoreDump::mn(const Instr & instr) {
     std::printf("\n%06o: ", PC - 2);
-    std::printf("%s\t", parent->instrs[idx].name.c_str());
+    std::printf("%s\t", instr.name.c_str());
     countfrsp = 24;
 }
 void CoreDump::reg(WORD opcode) {

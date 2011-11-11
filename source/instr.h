@@ -15,6 +15,7 @@
 #include "./types.h"
 
 namespace PlimDP {
+class Core;
 struct Instr {
     std::string name;
     WORD code;

@@ -11,6 +11,7 @@
 #define COREDUMP_H
 
 #include "./types.h"
+#include "./instr.h"
 
 namespace PlimDP {
 class Core;
@@ -27,7 +28,7 @@ class CoreDump {
     WORD oldPC;
 
     void running();
-    void mn(BYTE idx);
+    void mn(const Instr & instr);
     void reg(WORD opcode);
     void op();
     void aim();
