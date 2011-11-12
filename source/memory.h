@@ -13,7 +13,6 @@
 #include <string>
 
 #include "./types.h"
-#include "./io.h"
 
 namespace PlimDP {
 
@@ -24,14 +23,12 @@ class Memory {
     WORD dat[K];
     BYTE memory[MEMSIZE];
 
-    bool checkmem(DWORD index, BYTE kol) const;
-    BYTE readbyte(DWORD index) const;
-    void writebyte(DWORD index, BYTE x);
+    inline bool checkmem(DWORD index) const {
+        return (index < MEMSIZE);
+    }
+  //  BYTE readbyte(DWORD index) const;
+  //  void writebyte(DWORD index, BYTE x);
   public:
-
-    Memory();
-    ~Memory();
-
     void load(const std::string & file);
     void writeword(DWORD index, WORD x);
     WORD readword(DWORD index) const;

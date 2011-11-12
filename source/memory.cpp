@@ -15,15 +15,6 @@
 #include "./macro.h"
 
 namespace PlimDP {
-Memory::Memory() {
-    for (unsigned i = 0; i < MEMSIZE; ++i) {
-        memory[i] = 0;
-    }
-}
-
-Memory::~Memory() {
-}
-
 void Memory::load(const std::string & file) {
     std::FILE *fd;
     WORD a, b, c;
@@ -34,48 +25,42 @@ void Memory::load(const std::string & file) {
         dat[k++] = c;
         for (i = 0; i < c; i++)
             if (std::fscanf(fd, "%hx", &b) == 1)
-                writebyte(a+i, b);
+                memory[a+i] = b;
     }
     std::fclose(fd);
 }
 
-bool Memory::checkmem(DWORD index, BYTE kol) const {
-    if (index < MEMSIZE) {
-        if (kol == 1)
-            return true;
-        if (kol == 2)
-            return true;
-    }
-    DIE("Memory check failed");
-    return false;
-}
-
+/*
 void Memory::writebyte(DWORD index, BYTE x) {
-    if (checkmem(index, 1))
+    if (checkmem(index))
         memory[index] = x;
     else
         DIE("Error: writing byte outside the memory");
 }
+*/
 
 void Memory::writeword(DWORD index, WORD x) {
-    if (checkmem(index, 2)) {
+    if (checkmem(index)) {
         WORD* ptr = reinterpret_cast<WORD*>(&memory[index]);
         *ptr = x;
     } else {
         DIE("Error: writing word outside the memory or bad address");
     }
 }
+
+/*
 BYTE Memory::readbyte(DWORD index) const {
-    if (checkmem(index, 1)) {
+    if (checkmem(index)) {
         return memory[index];
     } else {
         DIE("Error: reading byte outside the memory");
         return 0;
     }
 }
+*/
 
 WORD Memory::readword(DWORD index) const {
-    if (checkmem(index, 2)) {
+    if (checkmem(index)) {
         const WORD* ptr = reinterpret_cast<const WORD*>(&memory[index]);
         return *ptr;
     } else {
