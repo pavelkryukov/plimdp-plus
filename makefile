@@ -12,7 +12,6 @@ else
     CXXFLAGS:= $(CXXFLAGS) -DENABLE_TRACE=0
 endif
 
-
 SRC_DIR:=source
 BIN_DIR:=bin
 OBJ_DIR:=obj
@@ -28,6 +27,13 @@ CPP_FILES := \
 	$(SRC_DIR)/register.cpp	\
 	$(SRC_DIR)/isa.cpp	\
 	$(SRC_DIR)/main.cpp
+    
+ifeq ($(DISASM), 1)
+    CXXFLAGS:= $(CXXFLAGS) -DENABLE_DISASM=1
+    CPP_FILES:= $(CPP_FILES) $(SRC_DIR)/disassembler.cpp
+else
+    CXXFLAGS:= $(CXXFLAGS) -DENABLE_DISASM=0
+endif
 	
 OBJS_FILES:=${CPP_FILES:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o} 
 

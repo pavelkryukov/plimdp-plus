@@ -12,6 +12,18 @@
 #include "./isa.h"
 #include "./macro.h"
 
+#if ENABLE_TRACE
+    #define TRACE(OPERATIONS) OPERATIONS
+#else
+    #define TRACE(OPERATIONS)
+#endif
+
+#if ENABLE_DISASM
+    #define DISASM(OPERATIONS) OPERATIONS
+#else
+    #define DISASM(OPERATIONS)
+#endif
+
 namespace PlimDP {
 
 /*SPECIAL FUNCTIONS*****************************************************/
@@ -805,54 +817,54 @@ void Core::decode(WORD opcode, const Instr & instr) {
             ss = (opcode & 0007700) >> 6;
             mo = decode_m(ss);
             re = decode_r(ss);
-            DUMP( dump->op(); )
-            DUMP( dump->comma(); )
+            DISASM( disasm->op(); )
+            DISASM( disasm->comma(); )
             pS = select_operand(instr);
             dd = opcode & 0000077;
             mo = decode_m(dd);
             re = decode_r(dd);
-            DUMP( dump->op(); )
+            DISASM( disasm->op(); )
             pD = select_operand(instr);
             break;
         case Instr::T_DD:
             dd = opcode & 0000077;
             mo = decode_m(dd);
             re = decode_r(dd);
-            DUMP( dump->op(); )
+            DISASM( disasm->op(); )
             pD = select_operand(instr);
             break;
         case Instr::T_XX:
             xx = opcode & 0xFF;
-            DUMP( dump->aim(); )
+            DISASM( disasm->aim(); )
             break;
         case Instr::T_RSS:
             ss = opcode & 0000077;
             mo = decode_m(ss);
             re = decode_r(ss);
-            DUMP( dump->op(); )
-            DUMP( dump->comma(); )
+            DISASM( disasm->op(); )
+            DISASM( disasm->comma(); )
             pS = select_operand(instr);
             mo = 0;
             re = (opcode & 0000700) >> 6;
-            DUMP( dump->op(); )
+            DISASM( disasm->op(); )
             pD = select_operand(instr);
             break;
         case Instr::T_RDD:
             mo = 0;
             re = (opcode & 0000700) >> 6;
-            DUMP( dump->op(); )
-            DUMP( dump->comma(); )
+            DISASM( disasm->op(); )
+            DISASM( disasm->comma(); )
             pS = select_operand(instr);
             dd = opcode & 0000077;
             mo = decode_m(dd);
             re = decode_r(dd);
-            DUMP( dump->op(); )
+            DISASM( disasm->op(); )
             pD = select_operand(instr);
             break;
         case Instr::T_R:
             mo = 0;
             re = opcode & 0000007;
-            DUMP( dump->op() );
+            DISASM( disasm->op() );
             pD = select_operand(instr);
             break;
         case Instr::T_NONE:
@@ -866,10 +878,12 @@ Core::Core() : re(0),
                N(0), Z(0), V(0), C(0),
                mo(0), xx(0) {
     dump = new CoreDump(this);
+    DISASM( disasm = new Disassembler(this); )
 }
 
 Core::~Core() {
     delete dump;
+    DISASM( delete disasm; )
 }
 
 void Core::start() {
@@ -883,16 +897,17 @@ void Core::start() {
         // Decode
         const Instr instr = ISA::find_instrs(opcode);        //
 
-        DUMP( dump->mn(instr); )
+        DISASM( disasm->mn(instr); )
 
         decode(opcode, instr);
 
-        DUMP( dump->oldPC = reg.readPC(); )
+        DISASM( WORD oldPC = reg.readPC(); )
 
         // Execute
         (this->*(instr.exec))();            //
 
-        DUMP( dump->reg(opcode); )
+        DISASM( disasm->reg(opcode, oldPC); )
+        TRACE( dump->core();      )
     }  while (opcode);
     dump->end();
 }

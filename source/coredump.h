@@ -18,21 +18,12 @@ class Core;
 
 class CoreDump {
   private:
-    char pcsmflag;
-    char pcsmcnt;
-    char countfrsp;
     const Core* const parent;
   public:
     explicit CoreDump(const Core* core);
 
-    WORD oldPC;
-
     void running();
-    void mn(const Instr & instr);
-    void reg(WORD opcode);
-    void op();
-    void aim();
-    void comma();
+    void core();
     void end();
 };
 }

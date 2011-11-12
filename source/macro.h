@@ -17,10 +17,4 @@
 #define DIE(M) std::fprintf(stderr, "ASSERT: %s\n", (M)), assert(0)
 #define ASSERT(C, M) if (!(C)) DIE(M)
 
-#if ENABLE_TRACE
-    #define DUMP(OPERATIONS) OPERATIONS
-#else
-    #define DUMP(OPERATIONS)
-#endif
-
 #endif
