@@ -25,6 +25,7 @@ CPP_FILES := \
 	$(SRC_DIR)/bus.cpp \
 	$(SRC_DIR)/core.cpp \
 	$(SRC_DIR)/coredump.cpp \
+	$(SRC_DIR)/register.cpp	\
 	$(SRC_DIR)/isa.cpp	\
 	$(SRC_DIR)/main.cpp
 	

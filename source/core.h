@@ -14,6 +14,7 @@
 #include "./bus.h"
 #include "./coredump.h"
 #include "./instr.h"
+#include "./register.h"
 
 namespace PlimDP {
 class Core {
@@ -24,7 +25,7 @@ class Core {
     Bus mem;
 
     // Registers
-    WORD reg[8];
+    RegisterFile reg;
     BYTE re;
 
     // Flags
@@ -47,7 +48,7 @@ class Core {
             case Pointer::MEMORY:
                 return mem.readword(p.index);
             case Pointer::REGISTER:
-                return reg[p.index];
+                return reg.readreg(p.index);
             default:
                 return 0;
         }
@@ -59,7 +60,7 @@ class Core {
                 mem.writeword(p.index, data);
                 return;
             case Pointer::REGISTER:
-                reg[p.index] = data;
+                reg.writereg(p.index, data);
                 return;
         }
     }

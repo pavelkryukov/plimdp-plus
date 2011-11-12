@@ -11,9 +11,6 @@
 
 #include "./core.h"
 
-#define PC (parent->reg[7])
-#define SP (parent->reg[6])
-
 namespace PlimDP {
 CoreDump::CoreDump(const Core* core) : parent(core) {
 }
@@ -23,7 +20,7 @@ void CoreDump::running() {
 }
 
 void CoreDump::mn(const Instr & instr) {
-    std::printf("\n%06o: ", PC - 2);
+    std::printf("\n%06o: ", parent->reg.readPC() - 2);
     std::printf("%s\t", instr.name.c_str());
     countfrsp = 24;
 }
@@ -54,11 +51,11 @@ void CoreDump::reg(WORD opcode) {
 
     std::printf(" ");
     for (i = 0; i < 8; i++)
-        std::printf("%hd:%06o ", i, parent->reg[i]);
+        std::printf("%hd:%06o ", i, parent->reg.readreg(i));
 }
 void CoreDump::op() {
     WORD nt_cm;
-    nt_cm = parent->mem.readword(PC);
+    nt_cm = parent->mem.readword(parent->reg.readPC());
     pcsmcnt++;
     switch (parent->mo) {
         case 0:
@@ -105,7 +102,7 @@ void CoreDump::op() {
             break;
         case 6:
             if (parent->re == 7) {
-                std::printf("%06ho", nt_cm + PC + 2);
+                std::printf("%06ho", nt_cm + parent->reg.readPC() + 2);
                 countfrsp -= 6;
                 if (pcsmcnt == 1)
                     pcsmflag++;
@@ -122,7 +119,7 @@ void CoreDump::op() {
             break;
         case 7:
             if (parent->re == 7) {
-                std::printf("@%06ho", nt_cm + PC + 2);
+                std::printf("@%06ho", nt_cm + parent->reg.readPC() + 2);
                 countfrsp -= 7;
                 if (pcsmcnt == 1)
                     pcsmflag++;
@@ -146,15 +143,17 @@ void CoreDump::comma() {
 }
 
 void CoreDump::aim() {
-    std::printf("%06o", PC + 2*parent->xx);
+    std::printf("%06o", parent->reg.readPC() + 2*parent->xx);
     countfrsp -= 6;
 }
 void CoreDump::end() {
     std::printf("\n---------------- halted ---------------\n");
-    std::printf("r0=%06o r2=%06o r4=%06o sp=%06o\n",
-                    parent->reg[0], parent->reg[2], parent->reg[4], SP);
-    std::printf("r1=%06o r3=%06o r4=%06o pc=%06o\n",
-                    parent->reg[1], parent->reg[3], parent->reg[5], PC);
+    std::printf("r0=%06o r2=%06o r4=%06o SP=%06o\n",
+                    parent->reg.readreg(0), parent->reg.readreg(2),
+                    parent->reg.readreg(4), parent->reg.readSP());
+    std::printf("r1=%06o r3=%06o r5=%06o PC=%06o\n",
+                    parent->reg.readreg(1), parent->reg.readreg(3),
+                    parent->reg.readreg(5), parent->reg.readPC());
     std::printf("n=%ho z=%ho v=%ho c=%ho\n",
                     parent->N, parent->Z, parent->V, parent->C);
 }

@@ -14,9 +14,6 @@
 
 namespace PlimDP {
 
-#define PC (reg[7])
-#define SP (reg[6])
-
 /*SPECIAL FUNCTIONS*****************************************************/
 void Core::f_adcb() {
     BYTE result;
@@ -95,7 +92,7 @@ void Core::f_ashc() {
 
         this->writeword(pD, temp1);
     } else {
-        temp = ((DWORD)this->readword(pD) << 16) | ((DWORD) reg[re + 1]);
+        temp = ((DWORD)this->readword(pD) << 16) | ((DWORD) reg.readreg(re + 1));
         result = (SWORD) this->readword(pS) > 0
                     ? temp << this->readword(pS)
                     : (SDWORD) temp >> (-(SWORD) this->readword(pS));
@@ -109,7 +106,7 @@ void Core::f_ashc() {
                     ? (temp >> ((-(SWORD)this->readword(pS)) - 1)) & 1
                     : 0;
 
-        reg[re + 1] = (WORD) result;
+        reg.writereg(re + 1, (WORD) result);
         this->writeword(pD, (DWORD) result >> 16);
     }
 }
@@ -169,23 +166,23 @@ void Core::f_asr() {
 }
 void Core::f_bcc() {
     if (C == 0)
-        PC += 2*xx;
+        reg.incPC(2 * xx);
 }
 void Core::f_bcs() {
     if (C == 1)
-        PC += 2*xx;
+        reg.incPC(2 * xx);
 }
 void Core::f_beq() {
     if (Z == 1)
-        PC += 2*xx;
+        reg.incPC(2 * xx);
 }
 void Core::f_bge() {
     if ((N ^ V) == 0)
-        PC += 2*xx;
+        reg.incPC(2 * xx);
 }
 void Core::f_bgt() {
     if ((Z | (N ^ V)) == 0)
-        PC += 2*xx;
+        reg.incPC(2 * xx);
 }
 void Core::f_bicb() {
     BYTE result;
@@ -245,45 +242,45 @@ void Core::f_bit() {
 }
 void Core::f_bhi() {
     if ((C | Z) == 0)
-        PC += 2*xx;
+        reg.incPC(2 * xx);
 }
 void Core::f_ble() {
     if ((Z | (N ^ V)) == 1)
-        PC += 2*xx;
+        reg.incPC(2 * xx);
 }
 void Core::f_blt() {
     if ((N ^ V) == 1)
-        PC += 2*xx;
+        reg.incPC(2 * xx);
 }
 void Core::f_blos() {
     if ((C | Z) == 1)
-        PC += 2*xx;
+        reg.incPC(2 * xx);
 }
 void Core::f_bmi() {
     if (N == 1)
-        PC += 2*xx;
+        reg.incPC(2 * xx);
 }
 void Core::f_bne() {
     if (Z == 0)
-        PC += 2*xx;
+        reg.incPC(2 * xx);
 }
 void Core::f_bpl() {
     if (N == 0)
-        PC += 2*xx;
+        reg.incPC(2 * xx);
 }
 void Core::f_bpt() {
     DIE("f_bpt");
 }
 void Core::f_br() {
-    PC += 2*xx;
+    reg.incPC(2 * xx);
 }
 void Core::f_bvc() {
     if (V == 0)
-        PC += 2*xx;
+        reg.incPC(2 * xx);
 }
 void Core::f_bvs() {
     if (V == 1)
-        PC += 2*xx;
+        reg.incPC(2 * xx);
 }
 void Core::f_ccc() {
     N = Z = V = C = 0;
@@ -392,10 +389,10 @@ void Core::f_div() {
     WORD ostatok;
     WORD itog;
     if (re % 2) {
-        temp = ((DWORD) reg[re - 1] << 16) | ((DWORD) this->readword(pD));
+        temp = ((DWORD) reg.readreg(re - 1) << 16) | ((DWORD) this->readword(pD));
         altfl = 1;
     } else {
-        temp = ((DWORD) this->readword(pD) << 16) | ((DWORD) reg[re + 1]);
+        temp = ((DWORD) this->readword(pD) << 16) | ((DWORD) reg.readreg(re + 1));
     }
     if (this->readword(pS) != 0) {
         result = temp / (SWORD) this->readword(pS);
@@ -428,11 +425,11 @@ void Core::f_div() {
         Z = itog == 0 && !Ztf ? 1 : 0;
 
         if (re % 2) {
-            reg[re - 1] = itog;
+            reg.writereg(re - 1, itog);
             this->writeword(pD, ostatok);
         } else {
             this->writeword(pD, itog);
-            reg[re + 1] = ostatok;
+            reg.writereg(re + 1, ostatok);
         }
     } else {
         N = 0;
@@ -483,13 +480,13 @@ void Core::f_iot() {
     DIE("f_iot");
 }
 void Core::f_jmp() {
-    PC = pD.index;
+    reg.writePC(pD.index);
 }
 void Core::f_jsr() {
-    SP -= 2;
-    mem.writeword(SP, this->readword(pS));
-    this->writeword(pS, PC);
-    PC = pD.index;
+    reg.writeSP(reg.readSP() - 2);
+    mem.writeword(reg.readSP(), this->readword(pS));
+    this->writeword(pS, reg.readPC());
+    reg.writePC(pD.index);
 }
 void Core::f_mark() {
     DIE("f_mark");
@@ -545,7 +542,7 @@ void Core::f_mul() {
         this->writeword(pD, (WORD) result);
     } else {
         this->writeword(pD, (WORD)(result >> 16));
-        reg[re + 1] = (WORD) result;
+        reg.writereg(re + 1, (WORD) result);
     }
 }
 void Core::f_negb() {
@@ -634,9 +631,9 @@ void Core::f_rti() {
     DIE("f_rti");
 }
 void Core::f_rts() {
-    PC = this->readword(pD);
-    this->writeword(pD, mem.readword(SP));
-    SP += 2;
+    reg.writePC(this->readword(pD));
+    this->writeword(pD, mem.readword(reg.readSP()));
+    reg.writeSP(reg.readSP() + 2);
 }
 void Core::f_rtt() {
     DIE("f_rtt");
@@ -750,45 +747,45 @@ Core::Pointer Core::select_operand(const Instr & instr) {
             pointer.type = Pointer::REGISTER;
             break;
         case 1:
-            pointer.index = reg[re];
+            pointer.index = reg.readreg(re);
             pointer.type = Pointer::MEMORY;
             break;
         case 2:
-            pointer.index = reg[re];
+            pointer.index = reg.readreg(re);
             pointer.type = Pointer::MEMORY;
             if (instr.size == 1 && re < 6)
-                reg[re]++;
+                reg.increg(re, 1);
             else if (instr.size == 2 || re >= 6)
-                reg[re] += 2;
+                reg.increg(re, 2);
             break;
         case 3:
-            pointer.index = mem.readword(reg[re]);
+            pointer.index = mem.readword(reg.readreg(re));
             pointer.type = Pointer::MEMORY;
-            reg[re] += 2;
+            reg.increg(re, 2);
             break;
         case 4:
             if (instr.size == 1 && re < 6)
-                reg[re]--;
+                reg.increg(re, -1);
             else if (instr.size == 2 || re >= 6)
-                reg[re] -= 2;
-            pointer.index = reg[re];
+                reg.increg(re, -2);
+            pointer.index = reg.readreg(re);
             pointer.type = Pointer::MEMORY;
             break;
         case 5:
-            reg[re] -= 2;
-            pointer.index = mem.readword(reg[re]);
+            reg.increg(re, -2);
+            pointer.index = mem.readword(reg.readreg(re));
             pointer.type = Pointer::MEMORY;
             break;
         case 6:
-            offset = mem.readword(PC);
-            PC += 2;
-            pointer.index = (WORD)(reg[re] + offset);
+            offset = mem.readword(reg.readPC());
+            reg.incPC(2);
+            pointer.index = (WORD)(reg.readreg(re) + offset);
             pointer.type = Pointer::MEMORY;
             break;
         case 7:
-            offset = mem.readword(PC);
-            PC += 2;
-            pointer.index = mem.readword((WORD)(reg[re] + offset));
+            offset = mem.readword(reg.readPC());
+            reg.incPC(2);
+            pointer.index = mem.readword((WORD)(reg.readreg(re) + offset));
             pointer.type = Pointer::MEMORY;
             break;
     }
@@ -869,9 +866,6 @@ Core::Core() : re(0),
                N(0), Z(0), V(0), C(0),
                mo(0), xx(0) {
     dump = new CoreDump(this);
-    for (unsigned i = 0; i < sizeof(reg) / sizeof(reg[0]); ++i) {
-        reg[i] = 0;
-    }
 }
 
 Core::~Core() {
@@ -880,12 +874,11 @@ Core::~Core() {
 
 void Core::start() {
     dump->running();
-    PC = 0x200;
     WORD opcode;
     do {
         // Fetch
-        opcode = mem.readword(PC);        //
-        PC += 2;            //
+        opcode = mem.readword(reg.readPC());        //
+        reg.incPC(2);            //
 
         // Decode
         const Instr instr = ISA::find_instrs(opcode);        //
@@ -894,7 +887,7 @@ void Core::start() {
 
         decode(opcode, instr);
 
-        DUMP( dump->oldPC = PC; )
+        DUMP( dump->oldPC = reg.readPC(); )
 
         // Execute
         (this->*(instr.exec))();            //
