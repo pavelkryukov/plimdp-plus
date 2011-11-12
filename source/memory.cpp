@@ -15,7 +15,6 @@
 #include "./macro.h"
 
 namespace PlimDP {
-
 Memory::Memory() {
     for (unsigned i = 0; i < MEMSIZE; ++i) {
         memory[i] = 0;

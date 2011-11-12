@@ -14,11 +14,6 @@
 #include "./bus.h"
 #include "./macro.h"
 
-#define ISTAT 0177560
-#define IDATA 0177562
-#define OSTAT 0177564
-#define ODATA 0177566
-
 namespace PlimDP {
 void Bus::writeword(DWORD index, WORD x) {
     if (index == ODATA) {

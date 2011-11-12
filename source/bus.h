@@ -16,6 +16,10 @@
 
 namespace PlimDP {
 class Bus {
+    static const DWORD ISTAT = 0177560;
+    static const DWORD IDATA = 0177562;
+    static const DWORD OSTAT = 0177564;
+    static const DWORD ODATA = 0177566;
     IO io;
     Memory* mem;
   public:    

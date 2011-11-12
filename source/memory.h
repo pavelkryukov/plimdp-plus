@@ -21,11 +21,10 @@ namespace PlimDP {
 #define MEMSIZE (64*K)
 
 class Memory {
-    IO io;
-
     WORD dat[K];
     BYTE memory[MEMSIZE];
 
+    bool checkmem(DWORD index, BYTE kol) const;
     BYTE readbyte(DWORD index) const;
     void writebyte(DWORD index, BYTE x);
   public:
@@ -34,7 +33,6 @@ class Memory {
     ~Memory();
 
     void load(const std::string & file);
-    bool checkmem(DWORD index, BYTE kol) const;
     void writeword(DWORD index, WORD x);
     WORD readword(DWORD index) const;
     void dump();
