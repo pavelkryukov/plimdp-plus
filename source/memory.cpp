@@ -14,11 +14,6 @@
 #include "./memory.h"
 #include "./macro.h"
 
-#define ISTAT 0177560
-#define IDATA 0177562
-#define OSTAT 0177564
-#define ODATA 0177566
-
 namespace PlimDP {
 
 Memory::Memory() {
@@ -57,12 +52,6 @@ bool Memory::checkmem(DWORD index, BYTE kol) const {
 }
 
 void Memory::writebyte(DWORD index, BYTE x) {
-    if (index == ODATA) {
-        io.output(x);
-    }
-    if (index == IDATA || index == OSTAT || index == ISTAT) {
-        DIE("Incorrect work with I/O system");
-    }
     if (checkmem(index, 1))
         memory[index] = x;
     else
@@ -70,12 +59,6 @@ void Memory::writebyte(DWORD index, BYTE x) {
 }
 
 void Memory::writeword(DWORD index, WORD x) {
-    if (index == ODATA) {
-        io.output(x);
-    }
-    if (index == IDATA || index == OSTAT || index == ISTAT) {
-        DIE("Incorrect work with I/O system");
-    }
     if (checkmem(index, 2)) {
         WORD* ptr = reinterpret_cast<WORD*>(&memory[index]);
         *ptr = x;
@@ -84,9 +67,6 @@ void Memory::writeword(DWORD index, WORD x) {
     }
 }
 BYTE Memory::readbyte(DWORD index) const {
-    if (index == IDATA || index == ISTAT || index == OSTAT || index == ODATA) {
-        DIE("Incorrect work with I/O system");
-    }
     if (checkmem(index, 1)) {
         return memory[index];
     } else {
@@ -96,15 +76,6 @@ BYTE Memory::readbyte(DWORD index) const {
 }
 
 WORD Memory::readword(DWORD index) const {
-    if (index == IDATA) {
-        return io.input();
-    }
-    if (index == ISTAT || index == OSTAT) {
-        return 0200;
-    }
-    if (index == ODATA) {
-        return 0;
-    }
     if (checkmem(index, 2)) {
         const WORD* ptr = reinterpret_cast<const WORD*>(&memory[index]);
         return *ptr;

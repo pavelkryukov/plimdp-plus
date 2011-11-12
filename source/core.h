@@ -11,7 +11,7 @@
 #define CORE_H
 
 #include "./types.h"
-#include "./memory.h"
+#include "./bus.h"
 #include "./coredump.h"
 #include "./instr.h"
 
@@ -21,7 +21,7 @@ class Core {
     friend class ISA;
   
     // Memory
-    Memory* mem;
+    Bus mem;
 
     // Registers
     WORD reg[8];
@@ -45,7 +45,7 @@ class Core {
     inline WORD readword(Pointer p) {
         switch (p.type) {
             case Pointer::MEMORY:
-                return mem->readword(p.index);
+                return mem.readword(p.index);
             case Pointer::REGISTER:
                 return reg[p.index];
             default:
@@ -56,7 +56,7 @@ class Core {
     inline void writeword(Pointer p, WORD data) {
         switch (p.type) {
             case Pointer::MEMORY:
-                mem->writeword(p.index, data);
+                mem.writeword(p.index, data);
                 return;
             case Pointer::REGISTER:
                 reg[p.index] = data;
@@ -175,7 +175,7 @@ class Core {
     ~Core();
 
     inline void setMemory(Memory* memory) {
-        mem = memory;
+        mem.setMemory(memory);
     }
 
     void start();

@@ -35,14 +35,14 @@ void CoreDump::reg(WORD opcode) {
     if (pcsmflag == 0) {
         std::printf("[%06o]\n", opcode);
     } else if (pcsmflag == 1) {
-        temp1 = parent->mem->readword(oldPC - 2);
+        temp1 = parent->mem.readword(oldPC - 2);
         std::printf("[%06o %06o]\n", opcode, temp1);
     } else if (pcsmflag == 2) {
-        temp2 = parent->mem->readword(oldPC - 2);
+        temp2 = parent->mem.readword(oldPC - 2);
         std::printf("[%06o %06o]\n", opcode, temp2);
     } else if (pcsmflag == 3) {
-        temp1 = parent->mem->readword(oldPC - 4);
-        temp2 = parent->mem->readword(oldPC - 2);
+        temp1 = parent->mem.readword(oldPC - 4);
+        temp2 = parent->mem.readword(oldPC - 2);
         std::printf("[%06o %06o %06o]\n", opcode, temp1, temp2);
     }
     pcsmflag = pcsmcnt = 0;
@@ -58,7 +58,7 @@ void CoreDump::reg(WORD opcode) {
 }
 void CoreDump::op() {
     WORD nt_cm;
-    nt_cm = parent->mem->readword(PC);
+    nt_cm = parent->mem.readword(PC);
     pcsmcnt++;
     switch (parent->mo) {
         case 0:

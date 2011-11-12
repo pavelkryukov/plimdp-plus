@@ -22,6 +22,7 @@ OUTPUT := $(BIN_DIR)/PlimDP
 
 CPP_FILES := \
 	$(SRC_DIR)/memory.cpp \
+	$(SRC_DIR)/bus.cpp \
 	$(SRC_DIR)/core.cpp \
 	$(SRC_DIR)/coredump.cpp \
 	$(SRC_DIR)/isa.cpp	\

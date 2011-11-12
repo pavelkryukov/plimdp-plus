@@ -487,7 +487,7 @@ void Core::f_jmp() {
 }
 void Core::f_jsr() {
     SP -= 2;
-    mem->writeword(SP, this->readword(pS));
+    mem.writeword(SP, this->readword(pS));
     this->writeword(pS, PC);
     PC = pD.index;
 }
@@ -635,7 +635,7 @@ void Core::f_rti() {
 }
 void Core::f_rts() {
     PC = this->readword(pD);
-    this->writeword(pD, mem->readword(SP));
+    this->writeword(pD, mem.readword(SP));
     SP += 2;
 }
 void Core::f_rtt() {
@@ -750,27 +750,20 @@ Core::Pointer Core::select_operand(const Instr & instr) {
             pointer.type = Pointer::REGISTER;
             break;
         case 1:
-            if (mem->checkmem(reg[re], 1)) {
-                pointer.index = reg[re];
-                pointer.type = Pointer::MEMORY;
-            }
+            pointer.index = reg[re];
+            pointer.type = Pointer::MEMORY;
             break;
         case 2:
-            if (mem->checkmem(reg[re], 1)) {
-                pointer.index = reg[re];
-                pointer.type = Pointer::MEMORY;
-            }
+            pointer.index = reg[re];
+            pointer.type = Pointer::MEMORY;
             if (instr.size == 1 && re < 6)
                 reg[re]++;
             else if (instr.size == 2 || re >= 6)
                 reg[re] += 2;
             break;
         case 3:
-            if (mem->checkmem(reg[re], 2) &&
-                mem->checkmem(mem->readword(reg[re]), 1)) {
-                pointer.index = mem->readword(reg[re]);
-                pointer.type = Pointer::MEMORY;
-            }
+            pointer.index = mem.readword(reg[re]);
+            pointer.type = Pointer::MEMORY;
             reg[re] += 2;
             break;
         case 4:
@@ -778,35 +771,25 @@ Core::Pointer Core::select_operand(const Instr & instr) {
                 reg[re]--;
             else if (instr.size == 2 || re >= 6)
                 reg[re] -= 2;
-            if (mem->checkmem(reg[re], 1)) {
-                pointer.index = reg[re];
-                pointer.type = Pointer::MEMORY;
-            }
+            pointer.index = reg[re];
+            pointer.type = Pointer::MEMORY;
             break;
         case 5:
             reg[re] -= 2;
-            if (mem->checkmem(reg[re], 2) &&
-                mem->checkmem(mem->readword(reg[re]), 1)) {
-                pointer.index = mem->readword(reg[re]);
-                pointer.type = Pointer::MEMORY;
-            }
+            pointer.index = mem.readword(reg[re]);
+            pointer.type = Pointer::MEMORY;
             break;
         case 6:
-            offset = mem->readword(PC);
+            offset = mem.readword(PC);
             PC += 2;
-            if (mem->checkmem((WORD)(reg[re] + offset), 1)) {
-                pointer.index = (WORD)(reg[re] + offset);
-                pointer.type = Pointer::MEMORY;
-            }
+            pointer.index = (WORD)(reg[re] + offset);
+            pointer.type = Pointer::MEMORY;
             break;
         case 7:
-            offset = mem->readword(PC);
+            offset = mem.readword(PC);
             PC += 2;
-            if (mem->checkmem((WORD)(reg[re] + offset), 2) &&
-                mem->checkmem(mem->readword((WORD)(reg[re] + offset)), 1)) {
-                pointer.index = mem->readword((WORD)(reg[re] + offset));
-                pointer.type = Pointer::MEMORY;
-            }
+            pointer.index = mem.readword((WORD)(reg[re] + offset));
+            pointer.type = Pointer::MEMORY;
             break;
     }
     return pointer;
@@ -901,7 +884,7 @@ void Core::start() {
     WORD opcode;
     do {
         // Fetch
-        opcode = mem->readword(PC);        //
+        opcode = mem.readword(PC);        //
         PC += 2;            //
 
         // Decode
