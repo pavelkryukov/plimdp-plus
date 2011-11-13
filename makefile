@@ -18,7 +18,6 @@ endif
 SRC_DIR:=source
 BIN_DIR:=bin
 OBJ_DIR:=obj
-EXT_DIR:=external
 
 OUTPUT := $(BIN_DIR)/PlimDP
 
@@ -43,21 +42,13 @@ OBJS_FILES:=${CPP_FILES:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o}
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 	$(CXX) $(CXXFLAGS) $< -o $@
 
-asm: $(EXT_DIR)/as11
-#$(CC) $< $(CFLAGS) -o $(BIN_DIR)/$@
-	cp $< $(BIN_DIR)/$@
-
-pdp11: $(EXT_DIR)/pdp11
-#$(CC) $< $(CFLAGS) -o $(BIN_DIR)/$@
-	cp $< $(BIN_DIR)/$@
-    
 plimdp: $(OBJS_FILES)
 	$(CXX) $(LDFLAGS) $(OBJS_FILES) -o $(OUTPUT)
 
 legacy: $(SRC_DIR)/legacy/PlimDP.c
 	gcc -Wall -O3 $< -o $(BIN_DIR)/$@ 
 
-all: build_dirs plimdp asm pdp11
+all: build_dirs plimdp
 
 build_dirs:
 	mkdir -p $(OBJ_DIR)
