@@ -33,8 +33,8 @@ class Core {
 
     SBYTE xx;
 
-    // Pointers
-    struct Pointer {
+    // Operands
+    struct Operand {
         DWORD index;
         enum {
             MEMORY,
@@ -42,29 +42,29 @@ class Core {
         } type;
     };
 
-    inline WORD readword(Pointer p) {
+    inline WORD readword(Operand p) {
         switch (p.type) {
-            case Pointer::MEMORY:
+            case Operand::MEMORY:
                 return mem.readword(p.index);
-            case Pointer::REGISTER:
+            case Operand::REGISTER:
                 return reg.readreg(p.index);
             default:
                 return 0;
         }
     }
 
-    inline void writeword(Pointer p, WORD data) {
+    inline void writeword(Operand p, WORD data) {
         switch (p.type) {
-            case Pointer::MEMORY:
+            case Operand::MEMORY:
                 mem.writeword(p.index, data);
                 return;
-            case Pointer::REGISTER:
+            case Operand::REGISTER:
                 reg.writereg(p.index, data);
                 return;
         }
     }
 
-    Pointer pS, pD;
+    Operand pS, pD;
 
     void f_adcb();  void f_adc();  void f_add();
     void f_ash();   void f_ashc(); void f_aslb();
@@ -100,7 +100,7 @@ class Core {
     void f_xor();
 
     // Decoder
-    Pointer select_operand(const Instr & instr, BYTE re, BYTE mo);
+    Operand select_operand(const Instr & instr, BYTE re, BYTE mo);
     BYTE decode_m(BYTE a);
     BYTE decode_r(BYTE a);
     void decode(WORD opcode, const Instr & instr);

@@ -88,7 +88,7 @@ void Core::f_ashc() {
     DWORD temp;
     DWORD result;
     WORD temp1;
-    ASSERTX(pD.type == Pointer::REGISTER);
+    ASSERTX(pD.type == Operand::REGISTER);
     if (pD.index % 2) {
         temp1 = (SWORD) this->readword(pS) > 0
             ? this->readword(pD) << this->readword(pS)
@@ -401,7 +401,7 @@ void Core::f_div() {
     SDWORD result;
     WORD ostatok;
     WORD itog;
-    ASSERTX(pD.type == Pointer::REGISTER);
+    ASSERTX(pD.type == Operand::REGISTER);
     if (pD.index % 2) {
         temp = ((DWORD) reg.readreg(pD.index - 1) << 16) | ((DWORD) this->readword(pD));
         altfl = 1;
@@ -522,7 +522,7 @@ void Core::f_movb() {
     Z = temp == 0 ? 1 : 0;
     V = 0;
 
-    if (pD.type == Pointer::MEMORY)
+    if (pD.type == Operand::MEMORY)
         this->writeword(pD, (this->readword(pD) & 0xff00) | temp);
     else
         this->writeword(pD, (SBYTE) temp);
@@ -552,7 +552,7 @@ void Core::f_mul() {
     V = 0;
     C = (result >> 16) != 0;
 
-    ASSERTX(pD.type == Pointer::REGISTER);
+    ASSERTX(pD.type == Operand::REGISTER);
     if (pD.index % 2) {
         this->writeword(pD, (WORD) result);
     } else {
@@ -753,21 +753,21 @@ void Core::f_xor() {
 }
 
 /*DECODER***************************************************************/
-Core::Pointer Core::select_operand(const Instr & instr, BYTE re, BYTE mo) {
-    Core::Pointer pointer;
+Core::Operand Core::select_operand(const Instr & instr, BYTE re, BYTE mo) {
+    Core::Operand pointer;
     WORD offset;
     switch (mo) {
         case 0:
             pointer.index = re;
-            pointer.type = Pointer::REGISTER;
+            pointer.type = Operand::REGISTER;
             break;
         case 1:
             pointer.index = reg.readreg(re);
-            pointer.type = Pointer::MEMORY;
+            pointer.type = Operand::MEMORY;
             break;
         case 2:
             pointer.index = reg.readreg(re);
-            pointer.type = Pointer::MEMORY;
+            pointer.type = Operand::MEMORY;
             if (instr.size == 1 && re < 6)
                 reg.increg(re, 1);
             else if (instr.size == 2 || re >= 6)
@@ -775,7 +775,7 @@ Core::Pointer Core::select_operand(const Instr & instr, BYTE re, BYTE mo) {
             break;
         case 3:
             pointer.index = mem.readword(reg.readreg(re));
-            pointer.type = Pointer::MEMORY;
+            pointer.type = Operand::MEMORY;
             reg.increg(re, 2);
             break;
         case 4:
@@ -784,24 +784,24 @@ Core::Pointer Core::select_operand(const Instr & instr, BYTE re, BYTE mo) {
             else if (instr.size == 2 || re >= 6)
                 reg.increg(re, -2);
             pointer.index = reg.readreg(re);
-            pointer.type = Pointer::MEMORY;
+            pointer.type = Operand::MEMORY;
             break;
         case 5:
             reg.increg(re, -2);
             pointer.index = mem.readword(reg.readreg(re));
-            pointer.type = Pointer::MEMORY;
+            pointer.type = Operand::MEMORY;
             break;
         case 6:
             offset = mem.readword(reg.readPC());
             reg.incPC(2);
             pointer.index = (WORD)(reg.readreg(re) + offset);
-            pointer.type = Pointer::MEMORY;
+            pointer.type = Operand::MEMORY;
             break;
         case 7:
             offset = mem.readword(reg.readPC());
             reg.incPC(2);
             pointer.index = mem.readword((WORD)(reg.readreg(re) + offset));
-            pointer.type = Pointer::MEMORY;
+            pointer.type = Operand::MEMORY;
             break;
     }
     return pointer;
