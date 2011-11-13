@@ -40,11 +40,11 @@ void Disassembler::reg(WORD opcode, WORD oldPC) {
     pcsmflag = pcsmcnt = 0;
 }
 
-void Disassembler::op() {
+void Disassembler::op(BYTE mo) {
     WORD nt_cm;
     nt_cm = parent->mem.readword(parent->reg.readPC());
     pcsmcnt++;
-    switch (parent->mo) {
+    switch (mo) {
         case 0:
             std::printf("r%ho", parent->re);
             countfrsp -= 2;

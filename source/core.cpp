@@ -818,21 +818,21 @@ void Core::decode(WORD opcode, const Instr & instr) {
             ss = (opcode & 0007700) >> 6;
             mo = decode_m(ss);
             re = decode_r(ss);
-            DISASM( disasm->op(); )
+            DISASM( disasm->op(mo); )
             DISASM( disasm->comma(); )
             pS = select_operand(instr, mo);
 
             dd = opcode & 0000077;
             mo = decode_m(dd);
             re = decode_r(dd);
-            DISASM( disasm->op(); )
+            DISASM( disasm->op(mo); )
             pD = select_operand(instr, mo);
             break;
         case Instr::T_DD:
             dd = opcode & 0000077;
             mo = decode_m(dd);
             re = decode_r(dd);
-            DISASM( disasm->op(); )
+            DISASM( disasm->op(mo); )
             pD = select_operand(instr, mo);
             break;
         case Instr::T_XX:
@@ -843,32 +843,32 @@ void Core::decode(WORD opcode, const Instr & instr) {
             ss = opcode & 0000077;
             mo = decode_m(ss);
             re = decode_r(ss);
-            DISASM( disasm->op(); )
+            DISASM( disasm->op(mo); )
             DISASM( disasm->comma(); )            
             pS = select_operand(instr, mo);
             
             mo = 0;
             re = (opcode & 0000700) >> 6;
-            DISASM( disasm->op(); )
+            DISASM( disasm->op(mo); )
             pD = select_operand(instr, mo);
             break;
         case Instr::T_RDD:
             mo = 0;
             re = (opcode & 0000700) >> 6;
-            DISASM( disasm->op(); )
+            DISASM( disasm->op(mo); )
             DISASM( disasm->comma(); )
             pS = select_operand(instr, mo);
 
             dd = opcode & 0000077;
             mo = decode_m(dd);
             re = decode_r(dd);
-            DISASM( disasm->op(); )
+            DISASM( disasm->op(mo); )
             pD = select_operand(instr, mo);
             break;
         case Instr::T_R:
             mo = 0;
             re = opcode & 0000007;
-            DISASM( disasm->op() );
+            DISASM( disasm->op(mo) );
             pD = select_operand(instr, mo);
             break;
         case Instr::T_NONE:
