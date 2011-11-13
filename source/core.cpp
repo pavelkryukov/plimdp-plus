@@ -520,7 +520,7 @@ void Core::f_movb() {
     Z = temp == 0 ? 1 : 0;
     V = 0;
 
-    if (mo)
+    if (pD.type == Pointer::MEMORY)
         this->writeword(pD, (this->readword(pD) & 0xff00) | temp);
     else
         this->writeword(pD, (SBYTE) temp);
@@ -750,7 +750,7 @@ void Core::f_xor() {
 }
 
 /*DECODER***************************************************************/
-Core::Pointer Core::select_operand(const Instr & instr) {
+Core::Pointer Core::select_operand(const Instr & instr, BYTE mo) {
     Core::Pointer pointer;
     WORD offset;
     switch (mo) {
@@ -812,6 +812,7 @@ BYTE Core::decode_r(BYTE a) {
 void Core::decode(WORD opcode, const Instr & instr) {
     BYTE dd;
     BYTE ss;
+    BYTE mo;
     switch (instr.type) {
         case Instr::T_SSDD:
             ss = (opcode & 0007700) >> 6;
@@ -819,19 +820,20 @@ void Core::decode(WORD opcode, const Instr & instr) {
             re = decode_r(ss);
             DISASM( disasm->op(); )
             DISASM( disasm->comma(); )
-            pS = select_operand(instr);
+            pS = select_operand(instr, mo);
+
             dd = opcode & 0000077;
             mo = decode_m(dd);
             re = decode_r(dd);
             DISASM( disasm->op(); )
-            pD = select_operand(instr);
+            pD = select_operand(instr, mo);
             break;
         case Instr::T_DD:
             dd = opcode & 0000077;
             mo = decode_m(dd);
             re = decode_r(dd);
             DISASM( disasm->op(); )
-            pD = select_operand(instr);
+            pD = select_operand(instr, mo);
             break;
         case Instr::T_XX:
             xx = opcode & 0xFF;
@@ -842,30 +844,32 @@ void Core::decode(WORD opcode, const Instr & instr) {
             mo = decode_m(ss);
             re = decode_r(ss);
             DISASM( disasm->op(); )
-            DISASM( disasm->comma(); )
-            pS = select_operand(instr);
+            DISASM( disasm->comma(); )            
+            pS = select_operand(instr, mo);
+            
             mo = 0;
             re = (opcode & 0000700) >> 6;
             DISASM( disasm->op(); )
-            pD = select_operand(instr);
+            pD = select_operand(instr, mo);
             break;
         case Instr::T_RDD:
             mo = 0;
             re = (opcode & 0000700) >> 6;
             DISASM( disasm->op(); )
             DISASM( disasm->comma(); )
-            pS = select_operand(instr);
+            pS = select_operand(instr, mo);
+
             dd = opcode & 0000077;
             mo = decode_m(dd);
             re = decode_r(dd);
             DISASM( disasm->op(); )
-            pD = select_operand(instr);
+            pD = select_operand(instr, mo);
             break;
         case Instr::T_R:
             mo = 0;
             re = opcode & 0000007;
             DISASM( disasm->op() );
-            pD = select_operand(instr);
+            pD = select_operand(instr, mo);
             break;
         case Instr::T_NONE:
             break;
@@ -876,7 +880,7 @@ void Core::decode(WORD opcode, const Instr & instr) {
 /* MAIN_FUNCTIONS*******************************************************/
 Core::Core() : re(0),
                N(0), Z(0), V(0), C(0),
-               mo(0), xx(0) {
+               xx(0) {
     dump = new CoreDump(this);
     DISASM( disasm = new Disassembler(this); )
 }

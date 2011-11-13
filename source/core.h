@@ -32,7 +32,6 @@ class Core {
     // Flags
     BYTE N, Z, V, C;
 
-    BYTE mo;
     SBYTE xx;
 
     // Pointers
@@ -102,7 +101,7 @@ class Core {
     void f_xor();
 
     // Decoder
-    Pointer select_operand(const Instr & instr);
+    Pointer select_operand(const Instr & instr, BYTE mo);
     BYTE decode_m(BYTE a);
     BYTE decode_r(BYTE a);
     void decode(WORD opcode, const Instr & instr);
