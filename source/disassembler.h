@@ -26,7 +26,7 @@ class Disassembler {
     explicit Disassembler(const Core* core);
 
     void mn(const Instr & instr);
-    void reg(WORD opcode, WORD oldPC);
+    void reg(WORD opcode);
     void op(BYTE re, BYTE mo);
     void aim();
     void comma();

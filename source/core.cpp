@@ -813,6 +813,7 @@ BYTE Core::decode_r(BYTE a) {
     return a & 07;
 }
 void Core::decode(WORD opcode, const Instr & instr) {
+    DISASM( disasm->mn(instr); )
     BYTE dd, ss, mo, re;
     switch (instr.type) {
         case Instr::T_SSDD:
@@ -877,6 +878,7 @@ void Core::decode(WORD opcode, const Instr & instr) {
         default:
             break;
     }
+    DISASM( disasm->reg(opcode); )
 }
 /* MAIN_FUNCTIONS*******************************************************/
 Core::Core() : N(0), Z(0), V(0), C(0),
@@ -900,17 +902,11 @@ void Core::start() {
 
         // Decode
         const Instr instr = ISA::find_instrs(opcode);        //
-
-        DISASM( disasm->mn(instr); )
-
-        decode(opcode, instr);
-
-        DISASM( WORD oldPC = reg.readPC(); )
+        decode(opcode, instr);     
 
         // Execute
         (this->*(instr.exec))();            //
 
-        DISASM( disasm->reg(opcode, oldPC); )
         TRACE( dump->core();      )
     }  while (opcode);
     dump->end();

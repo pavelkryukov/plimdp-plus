@@ -20,21 +20,22 @@ void Disassembler::mn(const Instr & instr) {
     std::printf("%s\t", instr.name.c_str());
     countfrsp = 24;
 }
-void Disassembler::reg(WORD opcode, WORD oldPC) {
+void Disassembler::reg(WORD opcode) {
     WORD temp1, temp2;
     char frsp = ' ';
     std::printf("%*c", countfrsp, frsp);
+    BYTE PC = parent->reg.readPC();
     if (pcsmflag == 0) {
         std::printf("[%06o]", opcode);
     } else if (pcsmflag == 1) {
-        temp1 = parent->mem.readword(oldPC - 2);
+        temp1 = parent->mem.readword(PC - 2);
         std::printf("[%06o %06o]", opcode, temp1);
     } else if (pcsmflag == 2) {
-        temp2 = parent->mem.readword(oldPC - 2);
+        temp2 = parent->mem.readword(PC - 2);
         std::printf("[%06o %06o]", opcode, temp2);
     } else if (pcsmflag == 3) {
-        temp1 = parent->mem.readword(oldPC - 4);
-        temp2 = parent->mem.readword(oldPC - 2);
+        temp1 = parent->mem.readword(PC - 4);
+        temp2 = parent->mem.readword(PC - 2);
         std::printf("[%06o %06o %06o]", opcode, temp1, temp2);
     }
     pcsmflag = pcsmcnt = 0;
