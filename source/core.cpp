@@ -88,7 +88,8 @@ void Core::f_ashc() {
     DWORD temp;
     DWORD result;
     WORD temp1;
-    if (re % 2) {
+    ASSERTX(pD.type == Pointer::REGISTER);
+    if (pD.index % 2) {
         temp1 = (SWORD) this->readword(pS) > 0
             ? this->readword(pD) << this->readword(pS)
             : (SWORD) this->readword(pD) >> (-(SWORD) this->readword(pS));
@@ -104,7 +105,7 @@ void Core::f_ashc() {
 
         this->writeword(pD, temp1);
     } else {
-        temp = ((DWORD)this->readword(pD) << 16) | ((DWORD) reg.readreg(re + 1));
+        temp = ((DWORD)this->readword(pD) << 16) | ((DWORD) reg.readreg(pD.index + 1));
         result = (SWORD) this->readword(pS) > 0
                     ? temp << this->readword(pS)
                     : (SDWORD) temp >> (-(SWORD) this->readword(pS));
@@ -118,7 +119,7 @@ void Core::f_ashc() {
                     ? (temp >> ((-(SWORD)this->readword(pS)) - 1)) & 1
                     : 0;
 
-        reg.writereg(re + 1, (WORD) result);
+        reg.writereg(pD.index + 1, (WORD) result);
         this->writeword(pD, (DWORD) result >> 16);
     }
 }
@@ -400,11 +401,12 @@ void Core::f_div() {
     SDWORD result;
     WORD ostatok;
     WORD itog;
-    if (re % 2) {
-        temp = ((DWORD) reg.readreg(re - 1) << 16) | ((DWORD) this->readword(pD));
+    ASSERTX(pD.type == Pointer::REGISTER);
+    if (pD.index % 2) {
+        temp = ((DWORD) reg.readreg(pD.index - 1) << 16) | ((DWORD) this->readword(pD));
         altfl = 1;
     } else {
-        temp = ((DWORD) this->readword(pD) << 16) | ((DWORD) reg.readreg(re + 1));
+        temp = ((DWORD) this->readword(pD) << 16) | ((DWORD) reg.readreg(pD.index + 1));
     }
     if (this->readword(pS) != 0) {
         result = temp / (SWORD) this->readword(pS);
@@ -436,12 +438,12 @@ void Core::f_div() {
         N = (itog >> 15) & 1;
         Z = itog == 0 && !Ztf ? 1 : 0;
 
-        if (re % 2) {
-            reg.writereg(re - 1, itog);
+        if (pD.index % 2) {
+            reg.writereg(pD.index - 1, itog);
             this->writeword(pD, ostatok);
         } else {
             this->writeword(pD, itog);
-            reg.writereg(re + 1, ostatok);
+            reg.writereg(pD.index + 1, ostatok);
         }
     } else {
         N = 0;
@@ -550,11 +552,12 @@ void Core::f_mul() {
     V = 0;
     C = (result >> 16) != 0;
 
-    if (re % 2) {
+    ASSERTX(pD.type == Pointer::REGISTER);
+    if (pD.index % 2) {
         this->writeword(pD, (WORD) result);
     } else {
         this->writeword(pD, (WORD)(result >> 16));
-        reg.writereg(re + 1, (WORD) result);
+        reg.writereg(pD.index + 1, (WORD) result);
     }
 }
 void Core::f_negb() {
@@ -750,7 +753,7 @@ void Core::f_xor() {
 }
 
 /*DECODER***************************************************************/
-Core::Pointer Core::select_operand(const Instr & instr, BYTE mo) {
+Core::Pointer Core::select_operand(const Instr & instr, BYTE re, BYTE mo) {
     Core::Pointer pointer;
     WORD offset;
     switch (mo) {
@@ -810,30 +813,28 @@ BYTE Core::decode_r(BYTE a) {
     return a & 07;
 }
 void Core::decode(WORD opcode, const Instr & instr) {
-    BYTE dd;
-    BYTE ss;
-    BYTE mo;
+    BYTE dd, ss, mo, re;
     switch (instr.type) {
         case Instr::T_SSDD:
             ss = (opcode & 0007700) >> 6;
             mo = decode_m(ss);
             re = decode_r(ss);
-            DISASM( disasm->op(mo); )
+            DISASM( disasm->op(re, mo); )
             DISASM( disasm->comma(); )
-            pS = select_operand(instr, mo);
+            pS = select_operand(instr, re, mo);
 
             dd = opcode & 0000077;
             mo = decode_m(dd);
             re = decode_r(dd);
-            DISASM( disasm->op(mo); )
-            pD = select_operand(instr, mo);
+            DISASM( disasm->op(re, mo); )
+            pD = select_operand(instr, re, mo);
             break;
         case Instr::T_DD:
             dd = opcode & 0000077;
             mo = decode_m(dd);
             re = decode_r(dd);
-            DISASM( disasm->op(mo); )
-            pD = select_operand(instr, mo);
+            DISASM( disasm->op(re, mo); )
+            pD = select_operand(instr, re, mo);
             break;
         case Instr::T_XX:
             xx = opcode & 0xFF;
@@ -843,33 +844,33 @@ void Core::decode(WORD opcode, const Instr & instr) {
             ss = opcode & 0000077;
             mo = decode_m(ss);
             re = decode_r(ss);
-            DISASM( disasm->op(mo); )
+            DISASM( disasm->op(re, mo); )
             DISASM( disasm->comma(); )            
-            pS = select_operand(instr, mo);
+            pS = select_operand(instr, re, mo);
             
             mo = 0;
             re = (opcode & 0000700) >> 6;
-            DISASM( disasm->op(mo); )
-            pD = select_operand(instr, mo);
+            DISASM( disasm->op(re, mo); )
+            pD = select_operand(instr, re, mo);
             break;
         case Instr::T_RDD:
             mo = 0;
             re = (opcode & 0000700) >> 6;
-            DISASM( disasm->op(mo); )
+            DISASM( disasm->op(re, mo); )
             DISASM( disasm->comma(); )
-            pS = select_operand(instr, mo);
+            pS = select_operand(instr, re, mo);
 
             dd = opcode & 0000077;
             mo = decode_m(dd);
             re = decode_r(dd);
-            DISASM( disasm->op(mo); )
-            pD = select_operand(instr, mo);
+            DISASM( disasm->op(re, mo); )
+            pD = select_operand(instr, re, mo);
             break;
         case Instr::T_R:
             mo = 0;
             re = opcode & 0000007;
-            DISASM( disasm->op(mo) );
-            pD = select_operand(instr, mo);
+            DISASM( disasm->op(re, mo) );
+            pD = select_operand(instr, re, mo);
             break;
         case Instr::T_NONE:
             break;
@@ -878,8 +879,7 @@ void Core::decode(WORD opcode, const Instr & instr) {
     }
 }
 /* MAIN_FUNCTIONS*******************************************************/
-Core::Core() : re(0),
-               N(0), Z(0), V(0), C(0),
+Core::Core() : N(0), Z(0), V(0), C(0),
                xx(0) {
     dump = new CoreDump(this);
     DISASM( disasm = new Disassembler(this); )

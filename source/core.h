@@ -27,7 +27,6 @@ class Core {
 
     // Registers
     RegisterFile reg;
-    BYTE re;
 
     // Flags
     BYTE N, Z, V, C;
@@ -101,7 +100,7 @@ class Core {
     void f_xor();
 
     // Decoder
-    Pointer select_operand(const Instr & instr, BYTE mo);
+    Pointer select_operand(const Instr & instr, BYTE re, BYTE mo);
     BYTE decode_m(BYTE a);
     BYTE decode_r(BYTE a);
     void decode(WORD opcode, const Instr & instr);
