@@ -1,15 +1,18 @@
-$(CXX):=g++
+CXX:=g++
+CXXFLAGS:= -Wall
 
 ifeq ($(DEBUG), 1)
-    CXXFLAGS:= -Wall -O0 -g -c
+  ifeq ($(PROFILE), 1)
+    CXXFLAGS:= $(CXXFLAGS) -pg
+    LDFLAGS:= -pg
+  endif
+    CXXFLAGS:= $(CXXFLAGS) -O0 -g -c
 else
-    CXXFLAGS:= -Wall -O3 -c
+    CXXFLAGS:= $(CXXFLAGS) -O3 -c
 endif
 
 ifeq ($(TRACE), 1)
     CXXFLAGS:= $(CXXFLAGS) -DENABLE_TRACE=1
-else
-    CXXFLAGS:= $(CXXFLAGS) -DENABLE_TRACE=0
 endif
 
 SRC_DIR:=source
@@ -49,7 +52,7 @@ pdp11: $(EXT_DIR)/pdp11
 	cp $< $(BIN_DIR)/$@
     
 plimdp: $(OBJS_FILES)
-	$(CXX) $(OBJS_FILES) -o $(OUTPUT)
+	$(CXX) $(LDFLAGS) $(OBJS_FILES) -o $(OUTPUT)
 
 legacy: $(SRC_DIR)/legacy/PlimDP.c
 	gcc -Wall -O3 $< -o $(BIN_DIR)/$@ 

@@ -888,7 +888,7 @@ Core::Core() : N(0), Z(0), V(0), C(0),
 }
 
 Core::~Core() {
-    delete dump;
+    delete dump; 
     DISASM( delete disasm; )
 }
 
