@@ -179,23 +179,23 @@ void Core::f_asr() {
 }
 void Core::f_bcc() {
     if (C == 0)
-        reg.incPC(2 * xx);
+        this->branch(xx);
 }
 void Core::f_bcs() {
     if (C == 1)
-        reg.incPC(2 * xx);
+        this->branch(xx);
 }
 void Core::f_beq() {
     if (Z == 1)
-        reg.incPC(2 * xx);
+        this->branch(xx);
 }
 void Core::f_bge() {
     if ((N ^ V) == 0)
-        reg.incPC(2 * xx);
+        this->branch(xx);
 }
 void Core::f_bgt() {
     if ((Z | (N ^ V)) == 0)
-        reg.incPC(2 * xx);
+        this->branch(xx);
 }
 void Core::f_bicb() {
     BYTE result;
@@ -255,45 +255,45 @@ void Core::f_bit() {
 }
 void Core::f_bhi() {
     if ((C | Z) == 0)
-        reg.incPC(2 * xx);
+        this->branch(xx);
 }
 void Core::f_ble() {
     if ((Z | (N ^ V)) == 1)
-        reg.incPC(2 * xx);
+        this->branch(xx);
 }
 void Core::f_blt() {
     if ((N ^ V) == 1)
-        reg.incPC(2 * xx);
+        this->branch(xx);
 }
 void Core::f_blos() {
     if ((C | Z) == 1)
-        reg.incPC(2 * xx);
+        this->branch(xx);
 }
 void Core::f_bmi() {
     if (N == 1)
-        reg.incPC(2 * xx);
+        this->branch(xx);
 }
 void Core::f_bne() {
     if (Z == 0)
-        reg.incPC(2 * xx);
+        this->branch(xx);
 }
 void Core::f_bpl() {
     if (N == 0)
-        reg.incPC(2 * xx);
+        this->branch(xx);
 }
 void Core::f_bpt() {
     DIE("f_bpt");
 }
 void Core::f_br() {
-    reg.incPC(2 * xx);
+    this->branch(xx);
 }
 void Core::f_bvc() {
     if (V == 0)
-        reg.incPC(2 * xx);
+        this->branch(xx);
 }
 void Core::f_bvs() {
     if (V == 1)
-        reg.incPC(2 * xx);
+        this->branch(xx);
 }
 void Core::f_ccc() {
     N = Z = V = C = 0;
@@ -838,7 +838,7 @@ void Core::decode(WORD opcode, const Instr & instr) {
             pD = select_operand(instr, re, mo);
             break;
         case Instr::T_XX:
-            xx = opcode & 0xFF;
+            xx.value = opcode & 0xFF;
             DISASM( disasm->aim(); )
             break;
         case Instr::T_RSS:
@@ -881,8 +881,7 @@ void Core::decode(WORD opcode, const Instr & instr) {
     DISASM( disasm->reg(opcode); )
 }
 /* MAIN_FUNCTIONS*******************************************************/
-Core::Core() : N(0), Z(0), V(0), C(0),
-               xx(0) {
+Core::Core() : N(0), Z(0), V(0), C(0) {
     dump = new CoreDump(this);
     DISASM( disasm = new Disassembler(this); )
 }

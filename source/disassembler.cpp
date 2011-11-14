@@ -21,29 +21,24 @@ void Disassembler::mn(const Instr & instr) {
     countfrsp = 24;
 }
 void Disassembler::reg(WORD opcode) {
-    WORD temp1, temp2;
     char frsp = ' ';
     std::printf("%*c", countfrsp, frsp);
     BYTE PC = parent->reg.readPC();
     if (pcsmflag == 0) {
         std::printf("[%06o]", opcode);
-    } else if (pcsmflag == 1) {
-        temp1 = parent->mem.readword(PC - 2);
+    } else if (pcsmflag == 1 || pcsmflag == 2) {
+        WORD temp1 = parent->mem.readword(PC - 2);
         std::printf("[%06o %06o]", opcode, temp1);
-    } else if (pcsmflag == 2) {
-        temp2 = parent->mem.readword(PC - 2);
-        std::printf("[%06o %06o]", opcode, temp2);
     } else if (pcsmflag == 3) {
-        temp1 = parent->mem.readword(PC - 4);
-        temp2 = parent->mem.readword(PC - 2);
+        WORD temp1 = parent->mem.readword(PC - 4);
+        WORD temp2 = parent->mem.readword(PC - 2);
         std::printf("[%06o %06o %06o]", opcode, temp1, temp2);
     }
     pcsmflag = pcsmcnt = 0;
 }
 
 void Disassembler::op(BYTE re, BYTE mo) {
-    WORD nt_cm;
-    nt_cm = parent->mem.readword(parent->reg.readPC());
+    WORD nt_cm = parent->mem.readword(parent->reg.readPC());
     pcsmcnt++;
     switch (mo) {
         case 0:
@@ -131,7 +126,7 @@ void Disassembler::comma() {
 }
 
 void Disassembler::aim() {
-    std::printf("%06o", parent->reg.readPC() + 2*parent->xx);
+    std::printf("%06o", parent->reg.readPC() + 2*parent->xx.value);
     countfrsp -= 6;
 }
 }

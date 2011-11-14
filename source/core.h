@@ -31,8 +31,6 @@ class Core {
     // Flags
     BYTE N, Z, V, C;
 
-    SBYTE xx;
-
     // Operands
     struct Operand {
         DWORD index;
@@ -63,8 +61,17 @@ class Core {
                 return;
         }
     }
+    
+    struct BranchOperand {
+        SBYTE value;
+    };
+    
+    inline void branch(BranchOperand x) {
+        reg.incPC(2 * x.value);
+    }
 
     Operand pS, pD;
+    BranchOperand xx;
 
     void f_adcb();  void f_adc();  void f_add();
     void f_ash();   void f_ashc(); void f_aslb();
