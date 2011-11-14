@@ -15,7 +15,9 @@
 #include "./register.h"
 #include "./flags.h"
 
+#if ENABLE_TRACE
 #include "./tracer.h"
+#endif
 
 namespace PlimDP {
 class Executor {
@@ -106,8 +108,10 @@ class Executor {
     void f_xor();
 
     // Trace
+#if ENABLE_TRACE
     friend class Tracer;
     Tracer* tracer;
+#endif
     
     // Constructors
     Executor();

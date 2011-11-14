@@ -11,10 +11,6 @@ else
     CXXFLAGS:= $(CXXFLAGS) -O3 -c
 endif
 
-ifeq ($(TRACE), 1)
-    CXXFLAGS:= $(CXXFLAGS) -DENABLE_TRACE=1
-endif
-
 SRC_DIR:=source
 BIN_DIR:=bin
 OBJ_DIR:=obj
@@ -27,7 +23,6 @@ CPP_FILES := \
 	$(SRC_DIR)/core.cpp \
 	$(SRC_DIR)/executor.cpp \
 	$(SRC_DIR)/decoder.cpp \
-	$(SRC_DIR)/tracer.cpp \
 	$(SRC_DIR)/register.cpp	\
 	$(SRC_DIR)/isa.cpp	\
 	$(SRC_DIR)/main.cpp
@@ -35,6 +30,11 @@ CPP_FILES := \
 ifeq ($(DISASM), 1)
     CXXFLAGS:= $(CXXFLAGS) -DENABLE_DISASM=1
     CPP_FILES:= $(CPP_FILES) $(SRC_DIR)/disassembler.cpp
+endif
+
+ifeq ($(TRACE), 1)
+    CXXFLAGS:= $(CXXFLAGS) -DENABLE_TRACE=1
+    CPP_FILES:= $(CPP_FILES) $(SRC_DIR)/tracer.cpp
 endif
 	
 OBJS_FILES:=${CPP_FILES:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o} 

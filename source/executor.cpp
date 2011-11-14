@@ -739,10 +739,14 @@ void Executor::f_xor() {
 }
 
 Executor::Executor() {
+#if ENABLE_TRACE  
     tracer = new Tracer(this);
+#endif
 }
 
 Executor::~Executor() {
+#if ENABLE_TRACE  
     delete tracer;
+#endif
 }
 }  // namespace PlimDP
