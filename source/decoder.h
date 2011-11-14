@@ -21,8 +21,15 @@ class Decoder : public Executor {
   protected:
     // Decoder
     Operand select_operand(const Instr & instr, BYTE re, BYTE mo);
-    BYTE decode_m(BYTE a);
-    BYTE decode_r(BYTE a);
+
+    inline BYTE decode_m(BYTE a) {
+        return (a & 070) >> 3;
+    }
+
+    inline BYTE decode_r(BYTE a) {
+        return a & 07;
+    }
+
     void decode(WORD opcode, const Instr & instr);
 
 #if ENABLE_DISASM

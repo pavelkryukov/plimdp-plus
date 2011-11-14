@@ -71,12 +71,7 @@ Executor::Operand Decoder::select_operand(const Instr & instr, BYTE re, BYTE mo)
     }
     return pointer;
 }
-BYTE Decoder::decode_m(BYTE a) {
-    return (a & 070) >> 3;
-}
-BYTE Decoder::decode_r(BYTE a) {
-    return a & 07;
-}
+
 void Decoder::decode(WORD opcode, const Instr & instr) {
     DISASM( disasm->mn(instr); )
     BYTE dd, ss, mo, re;
