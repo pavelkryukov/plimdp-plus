@@ -739,10 +739,10 @@ void Executor::f_xor() {
 }
 
 Executor::Executor() {
-    dump = new CoreDump(this);
+    tracer = new Tracer(this);
 }
 
 Executor::~Executor() {
-    delete dump;
+    delete tracer;
 }
 }  // namespace PlimDP

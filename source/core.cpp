@@ -23,7 +23,7 @@
 
 namespace PlimDP {
 void Core::start() {
-    this->dump->running();
+    this->tracer->running();
     WORD opcode;
     do {
         // Fetch
@@ -37,8 +37,8 @@ void Core::start() {
         // Execute
         (this->*(instr.exec))();            //
 
-        TRACE( this->dump->core(); )
+        TRACE( this->tracer->core(); )
     }  while (opcode);
-    this->dump->end();
+    this->tracer->end();
 }
 }  // namespace PlimDP

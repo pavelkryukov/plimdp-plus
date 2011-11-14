@@ -1,7 +1,7 @@
 /*
- * coredump.cpp
+ * tracer.cpp
  *
- * PlimDP+ core dump
+ * PlimDP+ core trace
  *
  * Copyright 2009 (C) Boris Belousov
  * Copyright 2011 (C) Pavel Kryukov (remastering)
@@ -9,17 +9,18 @@
 
 #include <cstdio>
 
+#include "./tracer.h"
 #include "./executor.h"
 
 namespace PlimDP {
-CoreDump::CoreDump(const Executor* core) : parent(core) {
+Tracer::Tracer(const Executor* core) : parent(core) {
 }
 
-void CoreDump::running() {
+void Tracer::running() {
     std::printf("\n---------------- running --------------\n");
 }
 
-void CoreDump::core() {
+void Tracer::core() {
     std::printf("\n");
 
     std::printf(parent->flags.N ? "N" : "-");
@@ -32,7 +33,7 @@ void CoreDump::core() {
         std::printf("%hd:%06o ", i, parent->reg.readreg(i));
 }
 
-void CoreDump::end() {
+void Tracer::end() {
     std::printf("\n---------------- halted ---------------\n");
     std::printf("r0=%06o r2=%06o r4=%06o SP=%06o\n",
                     parent->reg.readreg(0), parent->reg.readreg(2),

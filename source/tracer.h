@@ -1,7 +1,7 @@
 /*
- * coredump.h
+ * tracer.h
  *
- * PlimDP+ core dump
+ * PlimDP+ core trace
  *
  * Copyright 2009 (C) Boris Belousov
  * Copyright 2011 (C) Pavel Kryukov (remastering)
@@ -14,11 +14,11 @@
 
 namespace PlimDP {
 class Executor;
-class CoreDump {
+class Tracer {
   private:
     const Executor* const parent;
   public:
-    explicit CoreDump(const Executor* core);
+    explicit Tracer(const Executor* core);
 
     void running();
     void core();

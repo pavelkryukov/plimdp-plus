@@ -12,9 +12,10 @@
 
 #include "./types.h"
 #include "./bus.h"
-#include "./coredump.h"
 #include "./register.h"
 #include "./flags.h"
+
+#include "./tracer.h"
 
 namespace PlimDP {
 class Executor {
@@ -104,14 +105,14 @@ class Executor {
     void f_tstb();  void f_tst();  void f_wait();
     void f_xor();
 
-    // Dump
-    friend class CoreDump;
-    CoreDump* dump;
+    // Trace
+    friend class Tracer;
+    Tracer* tracer;
     
+    // Constructors
     Executor();
     ~Executor();
   public:
-
     inline void setMemory(Memory* memory) {
         mem.setMemory(memory);
     }
