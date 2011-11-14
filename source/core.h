@@ -15,6 +15,7 @@
 #include "./coredump.h"
 #include "./instr.h"
 #include "./register.h"
+#include "./flags.h"
 #include "./disassembler.h"
 
 namespace PlimDP {
@@ -29,7 +30,7 @@ class Core {
     RegisterFile reg;
 
     // Flags
-    BYTE N, Z, V, C;
+    Flags flags;
 
     // Operands
     struct Operand {

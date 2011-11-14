@@ -3,8 +3,8 @@
  *
  * PlimDP+ core
  *
- * Copyright 2009 (C) Boris Belousov
- * Copyright 2011 (C) Pavel Kryukov (remastering)
+ * Copyright 2009 (flags.C) Boris Belousov
+ * Copyright 2011 (flags.C) Pavel Kryukov (remastering)
 */
 
 #include "./core.h"
@@ -31,25 +31,25 @@ void Core::f_adcb() {
     BYTE result;
     BYTE temp;
     temp = (BYTE) (this->readword(pD) & 0xff);
-    result = temp + C;
+    result = temp + flags.C;
 
-    N = (result >> 7) & 1;
-    Z = result == 0 ? 1 : 0;
-    V = ((SBYTE) temp > 0) && ((SBYTE) result < 0);
-    C = (((WORD) temp + C) >> 8) & 1;
+    flags.N = (result >> 7) & 1;
+    flags.Z = result == 0 ? 1 : 0;
+    flags.V = ((SBYTE) temp > 0) && ((SBYTE) result < 0);
+    flags.C = (((WORD) temp + flags.C) >> 8) & 1;
 
     this->writeword(pD, (this->readword(pD) & 0xff00) | (WORD) result);
 }
 void Core::f_adc() {
     DWORD temp;
     WORD result;
-    temp = (DWORD) this->readword(pD) + C;
+    temp = (DWORD) this->readword(pD) + flags.C;
     result = (WORD) temp;
 
-    N = (temp >> 15) & 1;
-    Z = result == 0 ? 1 : 0;
-    V = ((SWORD) this->readword(pD) > 0) && ((SWORD) result < 0);
-    C = (temp >> 16) & 1;
+    flags.N = (temp >> 15) & 1;
+    flags.Z = result == 0 ? 1 : 0;
+    flags.V = ((SWORD) this->readword(pD) > 0) && ((SWORD) result < 0);
+    flags.C = (temp >> 16) & 1;
 
     this->writeword(pD, (WORD) temp);
 }
@@ -59,11 +59,11 @@ void Core::f_add() {
     temp = (DWORD) this->readword(pD) + (DWORD) this->readword(pS);
     result = (WORD) temp;
 
-    N = (temp >> 15) & 1;
-    Z = result == 0 ? 1 : 0;
-    V = ((SWORD) this->readword(pS) < 0) == ((SWORD) this->readword(pD) < 0) &&
+    flags.N = (temp >> 15) & 1;
+    flags.Z = result == 0 ? 1 : 0;
+    flags.V = ((SWORD) this->readword(pS) < 0) == ((SWORD) this->readword(pD) < 0) &&
         ((SWORD) this->readword(pS) < 0) != ((SWORD) result < 0);
-    C = (temp >> 16) & 1;
+    flags.C = (temp >> 16) & 1;
 
     this->writeword(pD, (WORD) temp);
 }
@@ -73,10 +73,10 @@ void Core::f_ash() {
             ? this->readword(pD) << this->readword(pS)
             : (SWORD) this->readword(pD) >> (-(SWORD) this->readword(pS));
 
-    N = (temp >> 15) & 1;
-    Z = temp == 0 ? 1 : 0;
-    V = ((SWORD) this->readword(pD) < 0) != ((SWORD) temp < 0);
-    C = (SWORD) this->readword(pS) > 0
+    flags.N = (temp >> 15) & 1;
+    flags.Z = temp == 0 ? 1 : 0;
+    flags.V = ((SWORD) this->readword(pD) < 0) != ((SWORD) temp < 0);
+    flags.C = (SWORD) this->readword(pS) > 0
         ? (this->readword(pD) >> (16 - this->readword(pS))) & 1
         : (SWORD) this->readword(pS) < 0
             ? (this->readword(pD) >> ((-(SWORD)this->readword(pS)) - 1)) & 1
@@ -94,10 +94,10 @@ void Core::f_ashc() {
             ? this->readword(pD) << this->readword(pS)
             : (SWORD) this->readword(pD) >> (-(SWORD) this->readword(pS));
 
-        N = (temp1 >> 15) & 1;
-        Z = temp1 == 0 ? 1 : 0;
-        V = ((SWORD) this->readword(pD) < 0) != ((SWORD) temp1 < 0);
-        C = (SWORD) this->readword(pS) > 0
+        flags.N = (temp1 >> 15) & 1;
+        flags.Z = temp1 == 0 ? 1 : 0;
+        flags.V = ((SWORD) this->readword(pD) < 0) != ((SWORD) temp1 < 0);
+        flags.C = (SWORD) this->readword(pS) > 0
             ? (this->readword(pD) >> (16 - this->readword(pS))) & 1
             : (SWORD) this->readword(pS) < 0
                 ? (this->readword(pD) >> ((-(SWORD)this->readword(pS)) - 1)) & 1
@@ -110,10 +110,10 @@ void Core::f_ashc() {
                     ? temp << this->readword(pS)
                     : (SDWORD) temp >> (-(SWORD) this->readword(pS));
 
-        N = (SDWORD) result < 0;
-        Z = result == 0 ? 1 : 0;
-        V = ((SDWORD) temp < 0) != ((SDWORD) result < 0);
-        C = (SWORD) this->readword(pS) > 0
+        flags.N = (SDWORD) result < 0;
+        flags.Z = result == 0 ? 1 : 0;
+        flags.V = ((SDWORD) temp < 0) != ((SDWORD) result < 0);
+        flags.C = (SWORD) this->readword(pS) > 0
                 ? (temp >> (32 - this->readword(pS))) & 1
                 : (SWORD) this->readword(pS) < 0
                     ? (temp >> ((-(SWORD)this->readword(pS)) - 1)) & 1
@@ -129,10 +129,10 @@ void Core::f_aslb() {
     temp = this->readword(pD);
     result = temp << 1;
 
-    N = (result >> 7) & 1;
-    Z = result == 0 ? 1 : 0;
-    V = ((SBYTE) temp < 0) != ((SBYTE) result < 0);
-    C = (temp >> 7) & 1;
+    flags.N = (result >> 7) & 1;
+    flags.Z = result == 0 ? 1 : 0;
+    flags.V = ((SBYTE) temp < 0) != ((SBYTE) result < 0);
+    flags.C = (temp >> 7) & 1;
 
     this->writeword(pD, (this->readword(pD) & 0xff00) | (WORD) result);
 }
@@ -142,10 +142,10 @@ void Core::f_asl() {
     temp = this->readword(pD);
     result = this->readword(pD) << 1;
 
-    N = (result >> 15) & 1;
-    Z = result == 0 ? 1 : 0;
-    V = ((SWORD) temp < 0) != ((SWORD) result < 0);
-    C = (temp >> 15) & 1;
+    flags.N = (result >> 15) & 1;
+    flags.Z = result == 0 ? 1 : 0;
+    flags.V = ((SWORD) temp < 0) != ((SWORD) result < 0);
+    flags.C = (temp >> 15) & 1;
 
     this->writeword(pD, this->readword(pD) << 1);
 }
@@ -155,11 +155,11 @@ void Core::f_asrb() {
     temp = this->readword(pD);
     result = (SBYTE) temp >> 1;
 
-    N = (result >> 7) & 1;
-    Z = result == 0 ? 1 : 0;
-    V = (((SBYTE) temp < 0) && !(temp & 0x1)) ||
+    flags.N = (result >> 7) & 1;
+    flags.Z = result == 0 ? 1 : 0;
+    flags.V = (((SBYTE) temp < 0) && !(temp & 0x1)) ||
         (((SBYTE) temp > 0) && (temp & 0x1));  // ???
-    C = temp & 0x1;
+    flags.C = temp & 0x1;
 
     this->writeword(pD, (this->readword(pD) & 0xff00) | (WORD) result);
 }
@@ -169,41 +169,41 @@ void Core::f_asr() {
     temp = this->readword(pD);
     result = (SWORD) this->readword(pD) >> 1;
 
-    N = (result >> 15) & 1;
-    Z = result == 0 ? 1 : 0;
-    V = (((SWORD) temp < 0) && !(temp & 0x1)) ||
+    flags.N = (result >> 15) & 1;
+    flags.Z = result == 0 ? 1 : 0;
+    flags.V = (((SWORD) temp < 0) && !(temp & 0x1)) ||
         (((SWORD) temp > 0) && (temp & 0x1));  // ???
-    C = temp & 0x1;
+    flags.C = temp & 0x1;
 
     this->writeword(pD, result);
 }
 void Core::f_bcc() {
-    if (C == 0)
+    if (flags.C == 0)
         this->branch(xx);
 }
 void Core::f_bcs() {
-    if (C == 1)
+    if (flags.C == 1)
         this->branch(xx);
 }
 void Core::f_beq() {
-    if (Z == 1)
+    if (flags.Z == 1)
         this->branch(xx);
 }
 void Core::f_bge() {
-    if ((N ^ V) == 0)
+    if ((flags.N ^ flags.V) == 0)
         this->branch(xx);
 }
 void Core::f_bgt() {
-    if ((Z | (N ^ V)) == 0)
+    if ((flags.Z | (flags.N ^ flags.V)) == 0)
         this->branch(xx);
 }
 void Core::f_bicb() {
     BYTE result;
     result = this->readword(pD) & ~this->readword(pS);
 
-    N = (result >> 7) & 1;
-    Z = result == 0 ? 1 : 0;
-    V = 0;
+    flags.N = (result >> 7) & 1;
+    flags.Z = result == 0 ? 1 : 0;
+    flags.V = 0;
 
     this->writeword(pD, (this->readword(pD) & 0xff00) | (WORD) result);
 }
@@ -211,9 +211,9 @@ void Core::f_bic() {
     WORD result;
     result = this->readword(pD) & ~this->readword(pS);
 
-    N = (result >> 15) & 1;
-    Z = result == 0 ? 1 : 0;
-    V = 0;
+    flags.N = (result >> 15) & 1;
+    flags.Z = result == 0 ? 1 : 0;
+    flags.V = 0;
 
     this->writeword(pD, this->readword(pD) & ~this->readword(pS));
 }
@@ -221,9 +221,9 @@ void Core::f_bisb() {
     BYTE result;
     result = this->readword(pD) | this->readword(pS);
 
-    N = (result >> 7) & 1;
-    Z = result == 0 ? 1 : 0;
-    V = 0;
+    flags.N = (result >> 7) & 1;
+    flags.Z = result == 0 ? 1 : 0;
+    flags.V = 0;
 
     this->writeword(pD, (this->readword(pD) & 0xff00) | (WORD) result);
 }
@@ -231,9 +231,9 @@ void Core::f_bis() {
     WORD result;
     result = this->readword(pD) | this->readword(pS);
 
-    N = (result >> 15) & 1;
-    Z = result == 0 ? 1 : 0;
-    V = 0;
+    flags.N = (result >> 15) & 1;
+    flags.Z = result == 0 ? 1 : 0;
+    flags.V = 0;
 
     this->writeword(pD, this->readword(pD) | this->readword(pS));
 }
@@ -241,44 +241,44 @@ void Core::f_bitb() {
     BYTE result;
     result = this->readword(pD) & this->readword(pS);
 
-    N = (result >> 7) & 1;
-    Z = result == 0 ? 1 : 0;
-    V = 0;
+    flags.N = (result >> 7) & 1;
+    flags.Z = result == 0 ? 1 : 0;
+    flags.V = 0;
 }
 void Core::f_bit() {
     WORD result;
     result = this->readword(pD) & this->readword(pS);
 
-    N = (result >> 15) & 1;
-    Z = result == 0 ? 1 : 0;
-    V = 0;
+    flags.N = (result >> 15) & 1;
+    flags.Z = result == 0 ? 1 : 0;
+    flags.V = 0;
 }
 void Core::f_bhi() {
-    if ((C | Z) == 0)
+    if ((flags.C | flags.Z) == 0)
         this->branch(xx);
 }
 void Core::f_ble() {
-    if ((Z | (N ^ V)) == 1)
+    if ((flags.Z | (flags.N ^ flags.V)) == 1)
         this->branch(xx);
 }
 void Core::f_blt() {
-    if ((N ^ V) == 1)
+    if ((flags.N ^ flags.V) == 1)
         this->branch(xx);
 }
 void Core::f_blos() {
-    if ((C | Z) == 1)
+    if ((flags.C | flags.Z) == 1)
         this->branch(xx);
 }
 void Core::f_bmi() {
-    if (N == 1)
+    if (flags.N == 1)
         this->branch(xx);
 }
 void Core::f_bne() {
-    if (Z == 0)
+    if (flags.Z == 0)
         this->branch(xx);
 }
 void Core::f_bpl() {
-    if (N == 0)
+    if (flags.N == 0)
         this->branch(xx);
 }
 void Core::f_bpt() {
@@ -288,43 +288,43 @@ void Core::f_br() {
     this->branch(xx);
 }
 void Core::f_bvc() {
-    if (V == 0)
+    if (flags.V == 0)
         this->branch(xx);
 }
 void Core::f_bvs() {
-    if (V == 1)
+    if (flags.V == 1)
         this->branch(xx);
 }
 void Core::f_ccc() {
-    N = Z = V = C = 0;
+    flags.N = flags.Z = flags.V = flags.C = 0;
 }
 void Core::f_clc() {
-    C = 0;
+    flags.C = 0;
 }
 void Core::f_cln() {
-    N = 0;
+    flags.N = 0;
 }
 void Core::f_clrb() {
-    N = 0;
-    Z = 1;
-    V = 0;
-    C = 0;
+    flags.N = 0;
+    flags.Z = 1;
+    flags.V = 0;
+    flags.C = 0;
 
     this->writeword(pD, this->readword(pD) & 0xff00);
 }
 void Core::f_clr() {
-    N = 0;
-    Z = 1;
-    V = 0;
-    C = 0;
+    flags.N = 0;
+    flags.Z = 1;
+    flags.V = 0;
+    flags.C = 0;
 
     this->writeword(pD, 0);
 }
 void Core::f_clv() {
-    V = 0;
+    flags.V = 0;
 }
 void Core::f_clz() {
-    Z = 0;
+    flags.Z = 0;
 }
 void Core::f_cmpb() {
     BYTE result;
@@ -333,30 +333,30 @@ void Core::f_cmpb() {
     temp2 = (BYTE) this->readword(pD);
     result = temp1 - temp2;
 
-    N = (result >> 7) & 1;
-    Z = result == 0 ? 1 : 0;
-    V = ((SBYTE) temp1 < 0) != ((SBYTE) temp2 < 0) &&
+    flags.N = (result >> 7) & 1;
+    flags.Z = result == 0 ? 1 : 0;
+    flags.V = ((SBYTE) temp1 < 0) != ((SBYTE) temp2 < 0) &&
         ((SBYTE) temp1 < 0) != ((SBYTE) result < 0);
-    C = temp1 < temp2;
+    flags.C = temp1 < temp2;
 }
 void Core::f_cmp() {
     WORD result;
     result = this->readword(pS) - this->readword(pD);
 
-    N = (result >> 15) & 1;
-    Z = result == 0 ? 1 : 0;
-    V = ((SWORD) this->readword(pS) < 0) != ((SWORD) this->readword(pD) < 0) &&
+    flags.N = (result >> 15) & 1;
+    flags.Z = result == 0 ? 1 : 0;
+    flags.V = ((SWORD) this->readword(pS) < 0) != ((SWORD) this->readword(pD) < 0) &&
         ((SWORD) this->readword(pS) < 0) != ((SWORD) result < 0);
-    C = this->readword(pS) < this->readword(pD);
+    flags.C = this->readword(pS) < this->readword(pD);
 }
 void Core::f_comb() {
     BYTE result;
     result = ~this->readword(pD);
 
-    N = (result >> 7) & 1;
-    Z = result == 0 ? 1 : 0;
-    V = 0;
-    C = 1;
+    flags.N = (result >> 7) & 1;
+    flags.Z = result == 0 ? 1 : 0;
+    flags.V = 0;
+    flags.C = 1;
 
     this->writeword(pD, (this->readword(pD) & 0xff00) | (WORD) result);
 }
@@ -364,10 +364,10 @@ void Core::f_com() {
     WORD result;
     result = ~this->readword(pD);
 
-    N = (result >> 15) & 1;
-    Z = result == 0 ? 1 : 0;
-    V = 0;
-    C = 1;
+    flags.N = (result >> 15) & 1;
+    flags.Z = result == 0 ? 1 : 0;
+    flags.V = 0;
+    flags.C = 1;
 
     this->writeword(pD, ~this->readword(pD));
 }
@@ -377,9 +377,9 @@ void Core::f_decb() {
     temp = (BYTE) (this->readword(pD) & 0xff);
     result = temp - 1;
 
-    N = (result >> 7) & 1;
-    Z = result == 0 ? 1 : 0;
-    V = ((SBYTE) temp < 0) && ((SBYTE) temp < 0) != ((SBYTE) result < 0);
+    flags.N = (result >> 7) & 1;
+    flags.Z = result == 0 ? 1 : 0;
+    flags.V = ((SBYTE) temp < 0) && ((SBYTE) temp < 0) != ((SBYTE) result < 0);
 
     this->writeword(pD, (this->readword(pD) & 0xff00) | (WORD) result);
 }
@@ -387,9 +387,9 @@ void Core::f_dec() {
     WORD result;
     result = this->readword(pD) - 1;
 
-    N = (result >> 15) & 1;
-    Z = result == 0 ? 1 : 0;
-    V = ((SWORD) this->readword(pD) < 0) &&
+    flags.N = (result >> 15) & 1;
+    flags.Z = result == 0 ? 1 : 0;
+    flags.V = ((SWORD) this->readword(pD) < 0) &&
         ((SWORD) this->readword(pD) < 0) != ((SWORD) result < 0);
 
     this->writeword(pD, this->readword(pD) - 1);
@@ -413,10 +413,10 @@ void Core::f_div() {
         ostatok = temp % (SWORD) this->readword(pS);
 
         if (altfl)
-            V = 0;
+            flags.V = 0;
         else
-            V = (DWORD)result >= 32768 ? 1 : 0;
-        C = 0;
+            flags.V = (DWORD)result >= 32768 ? 1 : 0;
+        flags.C = 0;
 
         if (result < 0 && !altfl) {
             result = -result;
@@ -435,8 +435,8 @@ void Core::f_div() {
             itog = result >> 16;
         }
 
-        N = (itog >> 15) & 1;
-        Z = itog == 0 && !Ztf ? 1 : 0;
+        flags.N = (itog >> 15) & 1;
+        flags.Z = itog == 0 && !Ztf ? 1 : 0;
 
         if (pD.index % 2) {
             reg.writereg(pD.index - 1, itog);
@@ -446,8 +446,8 @@ void Core::f_div() {
             reg.writereg(pD.index + 1, ostatok);
         }
     } else {
-        N = 0;
-        Z = V = C = 1;
+        flags.N = 0;
+        flags.Z = flags.V = flags.C = 1;
     }
 }
 void Core::f_emt() {
@@ -473,9 +473,9 @@ void Core::f_incb() {
     temp = (BYTE) (this->readword(pD) & 0xff);
     result = temp + 1;
 
-    N = (result >> 7) & 1;
-    Z = result == 0 ? 1 : 0;
-    V = ((SBYTE) temp > 0) && ((SBYTE) temp < 0) != ((SBYTE) result < 0);
+    flags.N = (result >> 7) & 1;
+    flags.Z = result == 0 ? 1 : 0;
+    flags.V = ((SBYTE) temp > 0) && ((SBYTE) temp < 0) != ((SBYTE) result < 0);
 
     this->writeword(pD, (this->readword(pD) & 0xff00) | (WORD) result);
 }
@@ -483,9 +483,9 @@ void Core::f_inc() {
     WORD result;
     result = this->readword(pD) + 1;
 
-    N = (result >> 15) & 1;
-    Z = result == 0 ? 1 : 0;
-    V = ((SWORD) this->readword(pD) > 0) &&
+    flags.N = (result >> 15) & 1;
+    flags.Z = result == 0 ? 1 : 0;
+    flags.V = ((SWORD) this->readword(pD) > 0) &&
         ((SWORD) this->readword(pD) < 0) != ((SWORD) result < 0);
 
     this->writeword(pD, this->readword(pD) + 1);
@@ -518,9 +518,9 @@ void Core::f_movb() {
     BYTE temp;
     temp = (BYTE) (this->readword(pS) & 0xff);
 
-    N = (temp >> 7) & 1;
-    Z = temp == 0 ? 1 : 0;
-    V = 0;
+    flags.N = (temp >> 7) & 1;
+    flags.Z = temp == 0 ? 1 : 0;
+    flags.V = 0;
 
     if (pD.type == Operand::MEMORY)
         this->writeword(pD, (this->readword(pD) & 0xff00) | temp);
@@ -528,9 +528,9 @@ void Core::f_movb() {
         this->writeword(pD, (SBYTE) temp);
 }
 void Core::f_mov() {
-    N = (this->readword(pS) >> 15) & 1;
-    Z = this->readword(pS) == 0 ? 1 : 0;
-    V = 0;
+    flags.N = (this->readword(pS) >> 15) & 1;
+    flags.Z = this->readword(pS) == 0 ? 1 : 0;
+    flags.V = 0;
 
     this->writeword(pD, this->readword(pS));
 }
@@ -547,10 +547,10 @@ void Core::f_mul() {
     SDWORD result;
     result = (SWORD) this->readword(pD) * (SWORD) this->readword(pS);
 
-    N = result < 0;
-    Z = result == 0 ? 1 : 0;
-    V = 0;
-    C = (result >> 16) != 0;
+    flags.N = result < 0;
+    flags.Z = result == 0 ? 1 : 0;
+    flags.V = 0;
+    flags.C = (result >> 16) != 0;
 
     ASSERTX(pD.type == Operand::REGISTER);
     if (pD.index % 2) {
@@ -564,10 +564,10 @@ void Core::f_negb() {
     BYTE result;
     result = ~this->readword(pD) + 1;
 
-    N = (result >> 7) & 1;
-    Z = result == 0 ? 1 : 0;
-    V = result == 0200 ? 1 : 0;
-    C = result == 0 ? 0 : 1;
+    flags.N = (result >> 7) & 1;
+    flags.Z = result == 0 ? 1 : 0;
+    flags.V = result == 0200 ? 1 : 0;
+    flags.C = result == 0 ? 0 : 1;
 
     this->writeword(pD, (this->readword(pD) & 0xff00) | (WORD) result);
 }
@@ -575,10 +575,10 @@ void Core::f_neg() {
     WORD result;
     result = ~this->readword(pD) + 1;
 
-    N = (result >> 15) & 1;
-    Z = result == 0 ? 1 : 0;
-    V = result == 0100000 ? 1 : 0;
-    C = result == 0 ? 0 : 1;
+    flags.N = (result >> 15) & 1;
+    flags.Z = result == 0 ? 1 : 0;
+    flags.V = result == 0100000 ? 1 : 0;
+    flags.C = result == 0 ? 0 : 1;
 
     this->writeword(pD, ~this->readword(pD) + 1);
 }
@@ -592,13 +592,13 @@ void Core::f_rolb() {
     BYTE temp;
     BYTE result;
     temp = (this->readword(pD) & 0200) >> 7;
-    result = (this->readword(pD) << 1) | C;
+    result = (this->readword(pD) << 1) | flags.C;
 
-    C = temp;
+    flags.C = temp;
     temp = this->readword(pD);
-    N = (result >> 7) & 1;
-    Z = result == 0 ? 1 : 0;
-    V = ((SBYTE) temp < 0) != ((SBYTE) result < 0);
+    flags.N = (result >> 7) & 1;
+    flags.Z = result == 0 ? 1 : 0;
+    flags.V = ((SBYTE) temp < 0) != ((SBYTE) result < 0);
 
     this->writeword(pD, (this->readword(pD) & 0xff00) | (WORD) result);
 }
@@ -606,12 +606,12 @@ void Core::f_rol() {
     BYTE temp;
     WORD result;
     temp = (this->readword(pD) & 0100000) >> 15;
-    result = (this->readword(pD) << 1) | C;
+    result = (this->readword(pD) << 1) | flags.C;
 
-    N = (result >> 15) & 1;
-    Z = result == 0 ? 1 : 0;
-    V = ((SWORD) this->readword(pD) < 0) != ((SWORD) result < 0);
-    C = temp;
+    flags.N = (result >> 15) & 1;
+    flags.Z = result == 0 ? 1 : 0;
+    flags.V = ((SWORD) this->readword(pD) < 0) != ((SWORD) result < 0);
+    flags.C = temp;
 
     this->writeword(pD, result);
 }
@@ -619,13 +619,13 @@ void Core::f_rorb() {
     BYTE temp;
     BYTE result;
     temp = this->readword(pD) & 1;
-    result = ((BYTE) this->readword(pD) >> 1) | (C << 7);
+    result = ((BYTE) this->readword(pD) >> 1) | (flags.C << 7);
 
-    C = temp;
+    flags.C = temp;
     temp = this->readword(pD);
-    N = (result >> 7) & 1;
-    Z = result == 0 ? 1 : 0;
-    V = ((SBYTE) this->readword(pD) < 0) != ((SBYTE) result < 0);
+    flags.N = (result >> 7) & 1;
+    flags.Z = result == 0 ? 1 : 0;
+    flags.V = ((SBYTE) this->readword(pD) < 0) != ((SBYTE) result < 0);
 
     this->writeword(pD, (this->readword(pD) & 0xff00) | (WORD) result);
 }
@@ -633,12 +633,12 @@ void Core::f_ror() {
     WORD temp;
     WORD result;
     temp = this->readword(pD) & 1;
-    result = (this->readword(pD) >> 1) | ((WORD) C << 15);
+    result = (this->readword(pD) >> 1) | ((WORD) flags.C << 15);
 
-    N = (result >> 15) & 1;
-    Z = result == 0 ? 1 : 0;
-    V = ((SWORD) this->readword(pD) < 0) != ((SWORD) result < 0);
-    C = temp;
+    flags.N = (result >> 15) & 1;
+    flags.Z = result == 0 ? 1 : 0;
+    flags.V = ((SWORD) this->readword(pD) < 0) != ((SWORD) result < 0);
+    flags.C = temp;
 
     this->writeword(pD, result);
 }
@@ -657,42 +657,42 @@ void Core::f_sbcb() {
     BYTE result;
     BYTE temp;
     temp = (BYTE) (this->readword(pD) & 0xff);
-    result = temp - C;
+    result = temp - flags.C;
 
-    N = (result >> 7) & 1;
-    Z = result == 0 ? 1 : 0;
-    V = ((SBYTE) temp < 0) && ((SBYTE) result > 0);
-    C = temp == 0 && C == 1;
+    flags.N = (result >> 7) & 1;
+    flags.Z = result == 0 ? 1 : 0;
+    flags.V = ((SBYTE) temp < 0) && ((SBYTE) result > 0);
+    flags.C = temp == 0 && flags.C == 1;
 
     this->writeword(pD, (this->readword(pD) & 0xff00) | (WORD) result);
 }
 void Core::f_sbc() {
     DWORD temp;
     WORD result;
-    temp = (DWORD) this->readword(pD) - C;
+    temp = (DWORD) this->readword(pD) - flags.C;
     result = (WORD) temp;
 
-    N = (temp >> 15) & 1;
-    Z = result == 0 ? 1 : 0;
-    V = ((SWORD) this->readword(pD) < 0) && ((SWORD) result > 0);
-    C = this->readword(pD) == 0 && C == 1;
+    flags.N = (temp >> 15) & 1;
+    flags.Z = result == 0 ? 1 : 0;
+    flags.V = ((SWORD) this->readword(pD) < 0) && ((SWORD) result > 0);
+    flags.C = this->readword(pD) == 0 && flags.C == 1;
 
     this->writeword(pD, (WORD) temp);
 }
 void Core::f_scc() {
-    N = Z = V = C = 1;
+    flags.N = flags.Z = flags.V = flags.C = 1;
 }
 void Core::f_sec() {
-    C = 1;
+    flags.C = 1;
 }
 void Core::f_sen() {
-    N = 1;
+    flags.N = 1;
 }
 void Core::f_sev() {
-    V = 1;
+    flags.V = 1;
 }
 void Core::f_sez() {
-    Z = 1;
+    flags.Z = 1;
 }
 void Core::f_sob() {
     DIE("f_sob");
@@ -706,11 +706,11 @@ void Core::f_sub() {
     temp = (DWORD) this->readword(pD) - (DWORD) this->readword(pS);
     result = (WORD) temp;
 
-    N = (temp >> 15) & 1;
-    Z = result == 0 ? 1 : 0;
-    V = ((SWORD) this->readword(pS) < 0) != ((SWORD) this->readword(pD) < 0) &&
+    flags.N = (temp >> 15) & 1;
+    flags.Z = result == 0 ? 1 : 0;
+    flags.V = ((SWORD) this->readword(pS) < 0) != ((SWORD) this->readword(pD) < 0) &&
         ((SWORD) this->readword(pD) < 0) != ((SWORD) result < 0);
-    C = this->readword(pD) < this->readword(pS);
+    flags.C = this->readword(pD) < this->readword(pS);
 
     this->writeword(pD, (WORD) temp);
 }
@@ -718,9 +718,9 @@ void Core::f_swab() {
     BYTE temp;
     temp = this->readword(pD);
 
-    N = (temp >> 7) & 1;
-    Z = temp == 0 ? 1 : 0;
-    V = C = 0;
+    flags.N = (temp >> 7) & 1;
+    flags.Z = temp == 0 ? 1 : 0;
+    flags.V = flags.C = 0;
 
     this->writeword(pD, (this->readword(pD) >> 8) | ((WORD)temp << 8));
 }
@@ -734,16 +734,16 @@ void Core::f_tstb() {
     BYTE temp;
     temp = (BYTE) this->readword(pD);
 
-    N = (temp >> 7) & 1;
-    Z = temp == 0 ? 1 : 0;
-    V = 0;
-    C = 0;
+    flags.N = (temp >> 7) & 1;
+    flags.Z = temp == 0 ? 1 : 0;
+    flags.V = 0;
+    flags.C = 0;
 }
 void Core::f_tst() {
-    N = (this->readword(pD) >> 15) & 1;
-    Z = this->readword(pD) == 0 ? 1 : 0;
-    V = 0;
-    C = 0;
+    flags.N = (this->readword(pD) >> 15) & 1;
+    flags.Z = this->readword(pD) == 0 ? 1 : 0;
+    flags.V = 0;
+    flags.C = 0;
 }
 void Core::f_wait() {
     DIE("f_wait");
@@ -881,7 +881,7 @@ void Core::decode(WORD opcode, const Instr & instr) {
     DISASM( disasm->reg(opcode); )
 }
 /* MAIN_FUNCTIONS*******************************************************/
-Core::Core() : N(0), Z(0), V(0), C(0) {
+Core::Core() {
     dump = new CoreDump(this);
     DISASM( disasm = new Disassembler(this); )
 }
