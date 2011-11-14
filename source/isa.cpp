@@ -110,12 +110,27 @@ const Instr ISA::instrs[] = {
 };
 
 const size_t ISA::instrs_s = sizeof(instrs) / sizeof(instrs[0]);
+const bool ISA::table_f = init_table();
+signed ISA::table[(WORD)~1] = {0};
+
+bool ISA::init_table() {
+    WORD maxWORD = ~1;
+    for (WORD opcode = 0; opcode < maxWORD; ++opcode) {
+        table[opcode] = -1;
+        for (unsigned i = 0; i < ISA::instrs_s; i++) {
+            if ((opcode & ISA::instrs[i].mask) == ISA::instrs[i].code) {
+                table[opcode] = i;
+                break;
+            }
+        }
+    }
+    return true;
+}
 
 Instr ISA::find_instrs(WORD opcode) {
-    for (unsigned i = 0; i < ISA::instrs_s; i++)
-        if ((opcode & ISA::instrs[i].mask) == ISA::instrs[i].code)
-            return ISA::instrs[i];
-    DIE("Such function doesn't exist");
-    return instrs[0];
+    if (table[opcode] == -1) {
+        DIE("Such function doesn't exist");
+    }
+    return instrs[table[opcode]];
 }
 }
