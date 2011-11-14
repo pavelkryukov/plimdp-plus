@@ -1,7 +1,7 @@
 /*
  * disassembler.cpp
  *
- * PlimDP+ core disassembly print
+ * PlimDP+ decoder disassembly print
  *
  * Copyright 2009 (C) Boris Belousov
  * Copyright 2011 (C) Pavel Kryukov (remastering)
@@ -9,10 +9,10 @@
 
 #include <cstdio>
 
-#include "./core.h"
+#include "./decoder.h"
 
 namespace PlimDP {
-Disassembler::Disassembler(const Core* core) : parent(core) {
+Disassembler::Disassembler(const Decoder* core) : parent(core) {
 }
 
 void Disassembler::mn(const Instr & instr) {

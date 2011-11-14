@@ -13,9 +13,9 @@
 #include <string>
 
 #include "./types.h"
+#include "./executor.h"
 
 namespace PlimDP {
-class Core;
 struct Instr {
     std::string name;
     WORD code;
@@ -34,7 +34,7 @@ struct Instr {
         T_RNN,
         T_N,
     } type;
-    void (Core::*exec)();
+    void (Executor::*exec)();
     BYTE size;
 };
 }

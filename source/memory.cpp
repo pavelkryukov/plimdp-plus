@@ -11,8 +11,9 @@
 
 #include <string>
 
-#include "./memory.h"
 #include "./macro.h"
+
+#include "./memory.h"
 
 namespace PlimDP {
 void Memory::load(const std::string & file) {

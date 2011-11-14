@@ -11,8 +11,9 @@
 
 #include <string>
 
-#include "./bus.h"
 #include "./macro.h"
+
+#include "./bus.h"
 
 namespace PlimDP {
 void Bus::writeword(DWORD index, WORD x) {

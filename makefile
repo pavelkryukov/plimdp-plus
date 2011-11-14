@@ -25,11 +25,13 @@ CPP_FILES := \
 	$(SRC_DIR)/memory.cpp \
 	$(SRC_DIR)/bus.cpp \
 	$(SRC_DIR)/core.cpp \
+	$(SRC_DIR)/executor.cpp \
+	$(SRC_DIR)/decoder.cpp \
 	$(SRC_DIR)/coredump.cpp \
 	$(SRC_DIR)/register.cpp	\
 	$(SRC_DIR)/isa.cpp	\
 	$(SRC_DIR)/main.cpp
-    
+
 ifeq ($(DISASM), 1)
     CXXFLAGS:= $(CXXFLAGS) -DENABLE_DISASM=1
     CPP_FILES:= $(CPP_FILES) $(SRC_DIR)/disassembler.cpp

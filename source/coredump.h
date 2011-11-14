@@ -11,16 +11,14 @@
 #define COREDUMP_H
 
 #include "./types.h"
-#include "./instr.h"
 
 namespace PlimDP {
-class Core;
-
+class Executor;
 class CoreDump {
   private:
-    const Core* const parent;
+    const Executor* const parent;
   public:
-    explicit CoreDump(const Core* core);
+    explicit CoreDump(const Executor* core);
 
     void running();
     void core();

@@ -16,7 +16,7 @@ namespace PlimDP {
 class Flags {
     public:
         bool N, Z, V, C;
-        inline Flags() : N(false), Z(false), V(false), C(false) {};
+        inline Flags() : N(false), Z(false), V(false), C(false) {}
 };
 }
 

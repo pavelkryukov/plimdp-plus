@@ -9,10 +9,10 @@
 
 #include <cstdio>
 
-#include "./core.h"
+#include "./executor.h"
 
 namespace PlimDP {
-CoreDump::CoreDump(const Core* core) : parent(core) {
+CoreDump::CoreDump(const Executor* core) : parent(core) {
 }
 
 void CoreDump::running() {

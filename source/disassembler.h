@@ -14,16 +14,15 @@
 #include "./instr.h"
 
 namespace PlimDP {
-class Core;
-
+class Decoder;
 class Disassembler {
   private:
     char pcsmflag;
     char pcsmcnt;
     char countfrsp;
-    const Core* const parent;
+    const Decoder* const parent;
   public:
-    explicit Disassembler(const Core* core);
+    explicit Disassembler(const Decoder* core);
 
     void mn(const Instr & instr);
     void reg(WORD opcode);

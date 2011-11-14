@@ -7,8 +7,9 @@
  * Copyright 2011 (C) Pavel Kryukov (remastering)
 */
 
-#include "./register.h"
 #include "./macro.h"
+
+#include "./register.h"
 
 namespace PlimDP {
 RegisterFile::RegisterFile() {
