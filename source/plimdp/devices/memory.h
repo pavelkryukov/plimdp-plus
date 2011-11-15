@@ -10,8 +10,6 @@
 #ifndef MEMORY_H
 #define MEMORY_H
 
-#include <string>
-
 #include <plimdp/generic/types.h>
 
 namespace PlimDP {
@@ -21,18 +19,18 @@ namespace Devices {
 #define MEMSIZE (64*K)
 
 class Memory {
-    WORD dat[K];
     BYTE memory[MEMSIZE];
 
     inline bool checkmem(DWORD index) const {
         return (index < MEMSIZE);
     }
-  //  BYTE readbyte(DWORD index) const;
-  //  void writebyte(DWORD index, BYTE x);
-  public:
-    void load(const std::string & file);
+  public:    
+    void writebyte(DWORD index, BYTE x);
+    BYTE readbyte(DWORD index) const;
+    
     void writeword(DWORD index, WORD x);
     WORD readword(DWORD index) const;
+    
     void dump();
 };
 }

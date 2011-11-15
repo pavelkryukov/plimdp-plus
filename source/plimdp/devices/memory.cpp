@@ -17,29 +17,12 @@
 
 namespace PlimDP {
 namespace Devices {
-void Memory::load(const std::string & file) {
-    std::FILE *fd;
-    WORD a, b, c;
-    WORD i, k = 0;
-    fd = std::fopen(file.c_str(), "r");
-    while (std::fscanf(fd, "%hx %hx", &a, &c) == 2) {
-        dat[k++] = a;
-        dat[k++] = c;
-        for (i = 0; i < c; i++)
-            if (std::fscanf(fd, "%hx", &b) == 1)
-                memory[a+i] = b;
-    }
-    std::fclose(fd);
-}
-
-/*
 void Memory::writebyte(DWORD index, BYTE x) {
     if (checkmem(index))
         memory[index] = x;
     else
         DIE("Error: writing byte outside the memory");
 }
-*/
 
 void Memory::writeword(DWORD index, WORD x) {
     if (checkmem(index)) {
@@ -50,7 +33,6 @@ void Memory::writeword(DWORD index, WORD x) {
     }
 }
 
-/*
 BYTE Memory::readbyte(DWORD index) const {
     if (checkmem(index)) {
         return memory[index];
@@ -59,7 +41,6 @@ BYTE Memory::readbyte(DWORD index) const {
         return 0;
     }
 }
-*/
 
 WORD Memory::readword(DWORD index) const {
     if (checkmem(index)) {

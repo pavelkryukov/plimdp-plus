@@ -1,6 +1,6 @@
 CXX:=g++
 CXXFLAGS:= -Wall
-LDFLAGS := -Wall -O3
+LDFLAGS := -Wall
 
 ifeq ($(DEBUG), 1)
   ifeq ($(PROFILE), 1)
@@ -22,6 +22,7 @@ OUTPUT := $(BIN_DIR)/PlimDP
 
 CPP_FILES := \
 	$(SRC_DIR)/PlimDP/devices/memory.cpp \
+	$(SRC_DIR)/PlimDP/devices/loader.cpp \
 	$(SRC_DIR)/PlimDP/cpu/bus.cpp \
 	$(SRC_DIR)/PlimDP/cpu/core.cpp \
 	$(SRC_DIR)/PlimDP/cpu/executor.cpp \
