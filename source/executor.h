@@ -74,6 +74,7 @@ class Executor {
     Operand pS, pD;
     BranchOperand xx;
 
+    // ISA
     friend class ISA;
     void f_adcb();  void f_adc();  void f_add();
     void f_ash();   void f_ashc(); void f_aslb();

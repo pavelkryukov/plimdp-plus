@@ -18,7 +18,7 @@
 
 namespace PlimDP {
 namespace CPU {
-class Decoder : public Executor {
+class Decoder : protected Executor {
   protected:
     // Decoder
     Operand select_operand(const Instr & instr, BYTE re, BYTE mo);
