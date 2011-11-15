@@ -10,13 +10,13 @@
 #ifndef EXECUTOR_H
 #define EXECUTOR_H
 
-#include "./types.h"
-#include "./bus.h"
-#include "./register.h"
-#include "./flags.h"
+#include <plimdp/generic/types.h>
+#include <plimdp/cpu/bus.h>
+#include <plimdp/cpu/register.h>
+#include <plimdp/cpu/flags.h>
 
 #if ENABLE_TRACE
-#include "./tracer.h"
+#include <plimdp/cpu/tracing/tracer.h>
 #endif
 
 namespace PlimDP {

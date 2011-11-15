@@ -9,7 +9,9 @@
 
 #include <cstdio>
 
-#include "./decoder.h"
+#include <plimdp/cpu/decoder.h>
+
+#include "./disassembler.h"
 
 namespace PlimDP {
 namespace CPU {

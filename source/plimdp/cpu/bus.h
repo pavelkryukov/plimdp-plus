@@ -10,9 +10,9 @@
 #ifndef BUS_H
 #define BUS_H
 
-#include "./types.h"
-#include "./io.h"
-#include "./memory.h"
+#include <plimdp/generic/types.h>
+#include <plimdp/devices/io.h>
+#include <plimdp/devices/memory.h>
 
 namespace PlimDP {
 namespace CPU {

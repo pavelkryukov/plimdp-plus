@@ -8,11 +8,12 @@
 */
 
 
-#include "./macro.h"
+#include <plimdp/generic/macro.h>
+#include <plimdp/generic/types.h>
 
-#include "./types.h"
-#include "./isa.h"
-#include "./instr.h"
+#include <plimdp/cpu/isa.h>
+#include <plimdp/cpu/instr.h>
+
 #include "./core.h"
 
 #if ENABLE_TRACE

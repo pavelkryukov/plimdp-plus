@@ -10,8 +10,8 @@
 #ifndef DISASSEMBLER_H
 #define DISASSEMBLER_H
 
-#include "./types.h"
-#include "./instr.h"
+#include <plimdp/generic/types.h>
+#include <plimdp/cpu/instr.h>
 
 namespace PlimDP {
 namespace CPU {

@@ -10,7 +10,7 @@
 #ifndef CORE_H
 #define CORE_H
 
-#include "./decoder.h"
+#include <plimdp/cpu/decoder.h>
 
 namespace PlimDP {
 namespace CPU {

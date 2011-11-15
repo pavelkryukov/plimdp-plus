@@ -9,8 +9,9 @@
 
 #include <cstdio>
 
+#include <plimdp/cpu/executor.h>
+
 #include "./tracer.h"
-#include "./executor.h"
 
 namespace PlimDP {
 namespace CPU {

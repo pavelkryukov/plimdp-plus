@@ -1,5 +1,6 @@
 CXX:=g++
 CXXFLAGS:= -Wall
+LDFLAGS := -Wall -O3
 
 ifeq ($(DEBUG), 1)
   ifeq ($(PROFILE), 1)
@@ -15,26 +16,28 @@ SRC_DIR:=source
 BIN_DIR:=bin
 OBJ_DIR:=obj
 
+CXXFLAGS:= $(CXXFLAGS) -I $(SRC_DIR)
+
 OUTPUT := $(BIN_DIR)/PlimDP
 
 CPP_FILES := \
-	$(SRC_DIR)/memory.cpp \
-	$(SRC_DIR)/bus.cpp \
-	$(SRC_DIR)/core.cpp \
-	$(SRC_DIR)/executor.cpp \
-	$(SRC_DIR)/decoder.cpp \
-	$(SRC_DIR)/register.cpp	\
-	$(SRC_DIR)/isa.cpp	\
+	$(SRC_DIR)/PlimDP/devices/memory.cpp \
+	$(SRC_DIR)/PlimDP/cpu/bus.cpp \
+	$(SRC_DIR)/PlimDP/cpu/core.cpp \
+	$(SRC_DIR)/PlimDP/cpu/executor.cpp \
+	$(SRC_DIR)/PlimDP/cpu/decoder.cpp \
+	$(SRC_DIR)/PlimDP/cpu/register.cpp	\
+	$(SRC_DIR)/PlimDP/cpu/isa.cpp	\
 	$(SRC_DIR)/main.cpp
 
 ifeq ($(DISASM), 1)
     CXXFLAGS:= $(CXXFLAGS) -DENABLE_DISASM=1
-    CPP_FILES:= $(CPP_FILES) $(SRC_DIR)/disassembler.cpp
+    CPP_FILES:= $(CPP_FILES) $(SRC_DIR)/PlimDP/cpu/tracing/disassembler.cpp
 endif
 
 ifeq ($(TRACE), 1)
     CXXFLAGS:= $(CXXFLAGS) -DENABLE_TRACE=1
-    CPP_FILES:= $(CPP_FILES) $(SRC_DIR)/tracer.cpp
+    CPP_FILES:= $(CPP_FILES) $(SRC_DIR)/PlimDP/cpu/tracing/tracer.cpp
 endif
 	
 OBJS_FILES:=${CPP_FILES:$(SRC_DIR)/%.cpp=$(OBJ_DIR)/%.o} 
@@ -45,13 +48,17 @@ $(OBJ_DIR)/%.o: $(SRC_DIR)/%.cpp
 plimdp: $(OBJS_FILES)
 	$(CXX) $(LDFLAGS) $(OBJS_FILES) -o $(OUTPUT)
 
-legacy: $(SRC_DIR)/legacy/PlimDP.c
+legacy: legacy/PlimDP.c
 	gcc -Wall -O3 $< -o $(BIN_DIR)/$@ 
 
 all: build_dirs plimdp
 
 build_dirs:
 	mkdir -p $(OBJ_DIR)
+	mkdir -p $(OBJ_DIR)/PlimDP
+	mkdir -p $(OBJ_DIR)/PlimDP/cpu
+	mkdir -p $(OBJ_DIR)/PlimDP/cpu/tracing
+	mkdir -p $(OBJ_DIR)/PlimDP/devices
 	mkdir -p $(BIN_DIR)
     
 clean:

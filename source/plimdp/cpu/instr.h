@@ -12,8 +12,9 @@
 
 #include <string>
 
-#include "./types.h"
-#include "./executor.h"
+#include <plimdp/generic/types.h>
+
+#include <plimdp/cpu/executor.h>
 
 namespace PlimDP {
 namespace CPU {

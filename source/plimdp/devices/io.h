@@ -12,7 +12,7 @@
 
 #include <cstdio>
 
-#include "./types.h"
+#include <plimdp/generic/types.h>
 
 namespace PlimDP {
 namespace Devices {

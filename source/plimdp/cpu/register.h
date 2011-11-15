@@ -10,7 +10,7 @@
 #ifndef REGISTER_H
 #define REGISTER_H
 
-#include "./types.h"
+#include <plimdp/generic/types.h>
 
 namespace PlimDP {
 namespace CPU {

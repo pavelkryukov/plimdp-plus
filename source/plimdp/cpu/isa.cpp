@@ -7,9 +7,10 @@
  * Copyright 2011 (C) Pavel Kryukov (remastering)
 */
 
-#include "./macro.h"
+#include <plimdp/generic/macro.h>
 
-#include "./executor.h"
+#include <plimdp/cpu/executor.h>
+
 #include "./isa.h"
 
 namespace PlimDP {

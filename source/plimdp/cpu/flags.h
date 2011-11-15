@@ -10,7 +10,7 @@
 #ifndef FLAGS_H
 #define FLAGS_H
 
-#include "./types.h"
+#include <plimdp/generic/types.h>
 
 namespace PlimDP {
 namespace CPU {

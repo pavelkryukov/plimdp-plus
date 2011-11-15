@@ -10,8 +10,9 @@
 #ifndef ISA_H
 #define ISA_H
 
-#include "./types.h"
-#include "./instr.h"
+#include <plimdp/generic/types.h>
+
+#include <plimdp/cpu/instr.h>
 
 namespace PlimDP {
 namespace CPU {

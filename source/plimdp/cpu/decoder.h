@@ -10,11 +10,11 @@
 #ifndef DECODER_H
 #define DECODER_H
 
-#include "./executor.h"
+#include <plimdp/cpu/executor.h>
 #if ENABLE_DISASM
-    #include "./disassembler.h"
+    #include <plimdp/cpu/tracing/disassembler.h>
 #endif
-#include "./instr.h"
+#include <plimdp/cpu/instr.h>
 
 namespace PlimDP {
 namespace CPU {

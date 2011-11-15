@@ -11,7 +11,7 @@
 
 #include <string>
 
-#include "./macro.h"
+#include <plimdp/generic/macro.h>
 
 #include "./bus.h"
 

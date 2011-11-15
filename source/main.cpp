@@ -12,7 +12,7 @@
 
 #include <string>
 
-#include "./core.h"
+#include <plimdp/cpu/core.h>
 
 int main(int ac, char *av[]) {
     if (ac != 2) {

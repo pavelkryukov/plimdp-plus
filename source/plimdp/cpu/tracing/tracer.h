@@ -10,7 +10,7 @@
 #ifndef COREDUMP_H
 #define COREDUMP_H
 
-#include "./types.h"
+#include <plimdp/generic/types.h>
 
 namespace PlimDP {
 namespace CPU {
