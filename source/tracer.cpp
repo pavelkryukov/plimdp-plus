@@ -13,6 +13,7 @@
 #include "./executor.h"
 
 namespace PlimDP {
+namespace CPU {
 Tracer::Tracer(const Executor* core) : parent(core) {
 }
 
@@ -44,5 +45,6 @@ void Tracer::end() {
     std::printf("n=%ho z=%ho v=%ho c=%ho\n",
                     parent->flags.N, parent->flags.Z,
                     parent->flags.V, parent->flags.C);
+}
 }
 }

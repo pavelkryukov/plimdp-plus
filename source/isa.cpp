@@ -13,6 +13,7 @@
 #include "./isa.h"
 
 namespace PlimDP {
+namespace CPU {
 const Instr ISA::instrs[] = {
     {"adcb", 0105500, 0177700, Instr::T_DD,   &Executor::f_adcb, 1},
     {"adc",  0005500, 0177700, Instr::T_DD,   &Executor::f_adc,  2},
@@ -133,5 +134,6 @@ Instr ISA::find_instrs(WORD opcode) {
         DIE("Such function doesn't exist");
     }
     return instrs[table[opcode]];
+}
 }
 }

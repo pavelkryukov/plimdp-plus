@@ -16,6 +16,7 @@
 #include "./memory.h"
 
 namespace PlimDP {
+namespace Devices {
 void Memory::load(const std::string & file) {
     std::FILE *fd;
     WORD a, b, c;
@@ -74,5 +75,6 @@ void Memory::dump() {
     for (unsigned i = 0; i < MEMSIZE; ++i) {
         std::printf("%ho\n ", memory[i]);
     }
+}
 }
 }

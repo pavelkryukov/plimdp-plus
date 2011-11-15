@@ -14,6 +14,7 @@
 #include "./instr.h"
 
 namespace PlimDP {
+namespace CPU {
 class Decoder;
 class Disassembler {
   private:
@@ -30,6 +31,7 @@ class Disassembler {
     void aim();
     void comma();
 };
+}
 }
 
 #endif

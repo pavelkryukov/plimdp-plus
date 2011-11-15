@@ -16,6 +16,7 @@
 #include "./executor.h"
 
 namespace PlimDP {
+namespace CPU {
 struct Instr {
     std::string name;
     WORD code;
@@ -37,6 +38,7 @@ struct Instr {
     void (Executor::*exec)();
     BYTE size;
 };
+}
 }
 
 #endif

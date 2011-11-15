@@ -13,6 +13,7 @@
 #include "./types.h"
 
 namespace PlimDP {
+namespace CPU {
 class RegisterFile {
     WORD reg[8];
   public:
@@ -31,6 +32,7 @@ class RegisterFile {
     void writeSP(WORD x);
     WORD readSP() const;
 };
+}
 }
 
 #endif

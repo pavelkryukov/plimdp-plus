@@ -18,6 +18,7 @@
 #endif
 
 namespace PlimDP {
+namespace CPU {
 Executor::Operand Decoder::select_operand(const Instr & instr, BYTE re, BYTE mo) {
     Executor::Operand pointer;
     WORD offset;
@@ -149,4 +150,5 @@ Decoder::~Decoder() {
     DISASM( delete disasm; )
 }
 
+}
 }

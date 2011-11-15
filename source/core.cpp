@@ -22,6 +22,7 @@
 #endif
 
 namespace PlimDP {
+namespace CPU {
 void Core::start() {
     TRACE( this->tracer->running() );
     WORD opcode;
@@ -40,5 +41,6 @@ void Core::start() {
         TRACE( this->tracer->core(); )
     }  while (opcode);
     TRACE ( this->tracer->end() );
+}
 }
 }  // namespace PlimDP

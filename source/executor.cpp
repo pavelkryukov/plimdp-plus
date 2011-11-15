@@ -12,7 +12,7 @@
 #include "./executor.h"
 
 namespace PlimDP {
-
+namespace CPU {
 void Executor::f_adcb() {
     BYTE result;
     BYTE temp;
@@ -748,5 +748,6 @@ Executor::~Executor() {
 #if ENABLE_TRACE  
     delete tracer;
 #endif
+}
 }
 }  // namespace PlimDP

@@ -13,11 +13,13 @@
 #include "./types.h"
 
 namespace PlimDP {
+namespace CPU {
 class Flags {
     public:
         bool N, Z, V, C;
         inline Flags() : N(false), Z(false), V(false), C(false) {}
 };
+}
 }
 
 #endif

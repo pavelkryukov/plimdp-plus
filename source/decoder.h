@@ -17,6 +17,7 @@
 #include "./instr.h"
 
 namespace PlimDP {
+namespace CPU {
 class Decoder : public Executor {
   protected:
     // Decoder
@@ -40,6 +41,7 @@ class Decoder : public Executor {
     Decoder();
     ~Decoder();
 };
+}
 }
 
 #endif

@@ -16,6 +16,7 @@
 #include "./bus.h"
 
 namespace PlimDP {
+namespace CPU {
 void Bus::writeword(DWORD index, WORD x) {
     if (index == ODATA) {
         io.output(x);
@@ -37,5 +38,6 @@ WORD Bus::readword(DWORD index) const {
         return 0;
     }
     return mem->readword(index);
+}
 }
 }

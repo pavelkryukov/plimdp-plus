@@ -15,6 +15,7 @@
 #include "./types.h"
 
 namespace PlimDP {
+namespace Devices {
 
 #define K 1024
 #define MEMSIZE (64*K)
@@ -34,6 +35,7 @@ class Memory {
     WORD readword(DWORD index) const;
     void dump();
 };
+}
 }
 
 #endif

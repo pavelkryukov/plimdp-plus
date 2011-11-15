@@ -13,6 +13,7 @@
 #include "./types.h"
 
 namespace PlimDP {
+namespace CPU {
 class Executor;
 class Tracer {
   private:
@@ -24,6 +25,7 @@ class Tracer {
     void core();
     void end();
 };
+}
 }
 
 #endif

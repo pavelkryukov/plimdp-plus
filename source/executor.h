@@ -20,6 +20,7 @@
 #endif
 
 namespace PlimDP {
+namespace CPU {
 class Executor {
    private:
     // Flags
@@ -116,11 +117,8 @@ class Executor {
     // Constructors
     Executor();
     ~Executor();
-  public:
-    inline void setMemory(Memory* memory) {
-        mem.setMemory(memory);
-    }
 };
+}
 }
 
 #endif

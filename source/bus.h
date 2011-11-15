@@ -15,21 +15,23 @@
 #include "./memory.h"
 
 namespace PlimDP {
+namespace CPU {
 class Bus {
     static const DWORD ISTAT = 0177560;
     static const DWORD IDATA = 0177562;
     static const DWORD OSTAT = 0177564;
     static const DWORD ODATA = 0177566;
-    IO io;
-    Memory* mem;
+    PlimDP::Devices::IO io;
+    PlimDP::Devices::Memory* mem;
   public:    
-    inline void setMemory(Memory* memory) {
+    inline void setMemory(PlimDP::Devices::Memory* memory) {
         mem = memory;
     }
 
     void writeword(DWORD index, WORD x);
     WORD readword(DWORD index) const;
 };
+}
 }
 
 #endif

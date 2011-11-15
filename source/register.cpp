@@ -12,6 +12,7 @@
 #include "./register.h"
 
 namespace PlimDP {
+namespace CPU {
 RegisterFile::RegisterFile() {
     for (unsigned i = 0; i < sizeof(reg) / sizeof(reg[0]); ++i) {
         reg[i] = 0;
@@ -53,5 +54,6 @@ void RegisterFile::writeSP(WORD x) {
 
 WORD RegisterFile::readSP() const {
     return reg[6];
+}
 }
 }

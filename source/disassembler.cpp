@@ -12,6 +12,7 @@
 #include "./decoder.h"
 
 namespace PlimDP {
+namespace CPU {
 Disassembler::Disassembler(const Decoder* core) : parent(core) {
 }
 
@@ -128,5 +129,6 @@ void Disassembler::comma() {
 void Disassembler::aim() {
     std::printf("%06o", parent->reg.readPC() + 2*parent->xx.value);
     countfrsp -= 6;
+}
 }
 }

@@ -13,10 +13,15 @@
 #include "./decoder.h"
 
 namespace PlimDP {
+namespace CPU {
 class Core : public Decoder {
   public:
+    inline void setMemory(PlimDP::Devices::Memory* memory) {
+        mem.setMemory(memory);
+    }
     void start();
 };
+}
 }
 
 #endif

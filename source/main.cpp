@@ -20,10 +20,10 @@ int main(int ac, char *av[]) {
         return 1;
     }
     
-    PlimDP::Memory memory11;
+    PlimDP::Devices::Memory memory11;
     memory11.load(std::string(av[1]));
 
-    PlimDP::Core pdp11;
+    PlimDP::CPU::Core pdp11;
     pdp11.setMemory(&memory11);
     pdp11.start();
     

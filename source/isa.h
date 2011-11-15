@@ -14,6 +14,7 @@
 #include "./instr.h"
 
 namespace PlimDP {
+namespace CPU {
 class ISA {
     private:
         static const Instr instrs[];
@@ -24,6 +25,7 @@ class ISA {
     public:
         static Instr find_instrs(WORD opcode);
 };
+}
 }
 
 #endif

@@ -15,6 +15,7 @@
 #include "./types.h"
 
 namespace PlimDP {
+namespace Devices {
 class IO {
   public:
     inline BYTE input() const {
@@ -24,6 +25,7 @@ class IO {
         std::printf("%c", x);
     }
 };
+}
 }
 
 #endif
