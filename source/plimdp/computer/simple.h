@@ -25,18 +25,9 @@ class Simple {
     PlimDP::Devices::Loader loader;
     PlimDP::Devices::IO io;
   public:
-    inline Simple() {
-        core.setMemory(&mem);
-        core.setIO(&io);
-        loader.setMemory(&mem);
-    }
-  
-    inline void load(const std::string & file) {
-        loader.load(file);
-    }
-    inline void start() {
-        core.start();
-    }
+    Simple();
+    void load(const std::string & file);
+    void start();
 };
 }
 }

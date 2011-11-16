@@ -24,6 +24,10 @@
 
 namespace PlimDP {
 namespace CPU {
+
+Core::Core() : Decoder() {}
+Core::~Core() {}
+
 void Core::start() {
     TRACE( this->tracer->running() );
     WORD opcode;
