@@ -24,7 +24,7 @@ class Bus {
     PlimDP::Devices::IO* io;
     PlimDP::Devices::MemoryA* mem;
   public:
-    inline void Bus() {
+    inline Bus() {
         io = NULL;
         mem = NULL;
     }

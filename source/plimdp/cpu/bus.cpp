@@ -21,27 +21,37 @@ void Bus::writeword(DWORD index, WORD x) {
     if (io != NULL)  {
         if (index == ODATA) {
             io->output(x);
+            return;
         }
         if (index == IDATA || index == OSTAT || index == ISTAT) {
             DIE("Incorrect work with I/O system");
+            return;
         }
     }
-    mem->writeword(index, x);
+    if (mem != NULL) {
+        mem->writeword(index, x);
+        return;
+    }
+    DIE("Bus is not connected to devices");
 }
 
 WORD Bus::readword(DWORD index) const {
     if (io != NULL)  {
         if (index == IDATA) {
-        return io->input();
+            return io->input();
         }
         if (index == ISTAT || index == OSTAT) {
             return 0200;
         }
+        if (index == ODATA) {
+            return 0;
+        }
     }
-    if (index == ODATA) {
-        return 0;
+    if (mem != NULL) {
+        return mem->readword(index);
     }
-    return mem->readword(index);
+    DIE("Bus is not connected to devices");
+    return 0;
 }
 }
 }
