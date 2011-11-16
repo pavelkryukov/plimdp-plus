@@ -10,22 +10,30 @@
 #ifndef SIMPLE_H
 #define SIMPLE_H
 
-#include <plimdp/cpu/core.h>
-#include <plimdp/devices/memory.h>
-#include <plimdp/devices/loader.h>
+#include <string>
 
 #define K 1024
 
 namespace PlimDP {
+namespace CPU {
+    class Core;
+}
+namespace Devices {
+    template<unsigned int> class Memory;
+    class Loader;
+    class IO;
+}  
+    
 namespace Computer {
 class Simple {
   private:
-    PlimDP::CPU::Core core;
-    PlimDP::Devices::Memory<64 * K> mem;
-    PlimDP::Devices::Loader loader;
-    PlimDP::Devices::IO io;
+    PlimDP::CPU::Core* core;
+    PlimDP::Devices::Memory<64 * K>* mem;
+    PlimDP::Devices::Loader* loader;
+    PlimDP::Devices::IO* io;
   public:
     Simple();
+    ~Simple();
     void load(const std::string & file);
     void start();
 };
