@@ -18,21 +18,25 @@
 namespace PlimDP {
 namespace CPU {
 void Bus::writeword(DWORD index, WORD x) {
-    if (index == ODATA) {
-        io.output(x);
-    }
-    if (index == IDATA || index == OSTAT || index == ISTAT) {
-        DIE("Incorrect work with I/O system");
+    if (io != NULL)  {
+        if (index == ODATA) {
+            io->output(x);
+        }
+        if (index == IDATA || index == OSTAT || index == ISTAT) {
+            DIE("Incorrect work with I/O system");
+        }
     }
     mem->writeword(index, x);
 }
 
 WORD Bus::readword(DWORD index) const {
-    if (index == IDATA) {
-        return io.input();
-    }
-    if (index == ISTAT || index == OSTAT) {
-        return 0200;
+    if (io != NULL)  {
+        if (index == IDATA) {
+        return io->input();
+        }
+        if (index == ISTAT || index == OSTAT) {
+            return 0200;
+        }
     }
     if (index == ODATA) {
         return 0;

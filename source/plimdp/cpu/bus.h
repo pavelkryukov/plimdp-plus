@@ -21,11 +21,15 @@ class Bus {
     static const DWORD IDATA = 0177562;
     static const DWORD OSTAT = 0177564;
     static const DWORD ODATA = 0177566;
-    PlimDP::Devices::IO io;
+    PlimDP::Devices::IO* io;
     PlimDP::Devices::MemoryA* mem;
   public:    
     inline void setMemory(PlimDP::Devices::MemoryA* memory) {
         mem = memory;
+    }
+
+    inline void setIO(PlimDP::Devices::IO* inputoutput) {
+        io = inputoutput;
     }
 
     void writeword(DWORD index, WORD x);

@@ -23,9 +23,11 @@ class Simple {
     PlimDP::CPU::Core core;
     PlimDP::Devices::Memory<64 * K> mem;
     PlimDP::Devices::Loader loader;
+    PlimDP::Devices::IO io;
   public:
     inline Simple() {
         core.setMemory(&mem);
+        core.setIO(&io);
         loader.setMemory(&mem);
     }
   

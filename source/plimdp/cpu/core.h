@@ -19,6 +19,9 @@ class Core : private Decoder {
     inline void setMemory(PlimDP::Devices::MemoryA* memory) {
         mem.setMemory(memory);
     }
+    inline void setIO(PlimDP::Devices::IO* iosys) {
+        mem.setIO(iosys);
+    }
     void start();
 };
 }
