@@ -22,9 +22,9 @@ class Bus {
     static const DWORD OSTAT = 0177564;
     static const DWORD ODATA = 0177566;
     PlimDP::Devices::IO io;
-    PlimDP::Devices::Memory* mem;
+    PlimDP::Devices::MemoryA* mem;
   public:    
-    inline void setMemory(PlimDP::Devices::Memory* memory) {
+    inline void setMemory(PlimDP::Devices::MemoryA* memory) {
         mem = memory;
     }
 

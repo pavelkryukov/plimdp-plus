@@ -21,7 +21,6 @@ CXXFLAGS:= $(CXXFLAGS) -I $(SRC_DIR)
 OUTPUT := $(BIN_DIR)/PlimDP
 
 CPP_FILES := \
-	$(SRC_DIR)/PlimDP/devices/memory.cpp \
 	$(SRC_DIR)/PlimDP/devices/loader.cpp \
 	$(SRC_DIR)/PlimDP/cpu/bus.cpp \
 	$(SRC_DIR)/PlimDP/cpu/core.cpp \

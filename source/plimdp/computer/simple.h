@@ -14,12 +14,14 @@
 #include <plimdp/devices/memory.h>
 #include <plimdp/devices/loader.h>
 
+#define K 1024
+
 namespace PlimDP {
 namespace Computer {
 class Simple {
   private:
     PlimDP::CPU::Core core;
-    PlimDP::Devices::Memory mem;
+    PlimDP::Devices::Memory<64 * K> mem;
     PlimDP::Devices::Loader loader;
   public:
     inline Simple() {

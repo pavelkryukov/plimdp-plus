@@ -16,7 +16,7 @@ namespace PlimDP {
 namespace CPU {
 class Core : private Decoder {
   public:
-    inline void setMemory(PlimDP::Devices::Memory* memory) {
+    inline void setMemory(PlimDP::Devices::MemoryA* memory) {
         mem.setMemory(memory);
     }
     void start();

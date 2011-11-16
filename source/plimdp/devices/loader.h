@@ -19,10 +19,10 @@ namespace PlimDP {
 namespace Devices {
 class Loader {
     WORD dat[K];
-    Memory* mem;
+    MemoryA* mem;
   public:
     void load(const std::string & file);
-    inline void setMemory(PlimDP::Devices::Memory* memory) {
+    inline void setMemory(PlimDP::Devices::MemoryA* memory) {
         mem = memory;
     }
 };
