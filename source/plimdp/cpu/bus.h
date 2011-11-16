@@ -23,7 +23,12 @@ class Bus {
     static const DWORD ODATA = 0177566;
     PlimDP::Devices::IO* io;
     PlimDP::Devices::MemoryA* mem;
-  public:    
+  public:
+    inline void Bus() {
+        io = NULL;
+        mem = NULL;
+    }
+
     inline void setMemory(PlimDP::Devices::MemoryA* memory) {
         mem = memory;
     }
