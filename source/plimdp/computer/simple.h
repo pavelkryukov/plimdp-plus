@@ -19,7 +19,7 @@ namespace CPU {
     class Core;
 }
 namespace Devices {
-    template<unsigned int> class Memory;
+    class MemoryA;
     class Loader;
     class IO;
 }  
@@ -28,7 +28,7 @@ namespace Computer {
 class Simple {
   private:
     PlimDP::CPU::Core* core;
-    PlimDP::Devices::Memory<64 * K>* mem;
+    PlimDP::Devices::MemoryA* mem;
     PlimDP::Devices::Loader* loader;
     PlimDP::Devices::IO* io;
   public:
